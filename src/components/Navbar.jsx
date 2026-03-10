@@ -7,6 +7,7 @@ const LINKS = [
   { to: '/chat',    icon: '💬', label: '聊天',     end: false },
   { to: '/tasks',   icon: '⏰', label: '自动任务', end: false },
   { to: '/skills',  icon: '🧩', label: '功能中心', end: false },
+  { to: '/family',  icon: '👨‍👩‍👧', label: '家庭',     end: false },
   { to: '/config',  icon: '⚙️', label: '设置',     end: false },
 ]
 

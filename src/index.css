@@ -1410,3 +1410,180 @@ body {
 }
 .time-confirm-btn:disabled { opacity: .6; cursor: not-allowed; }
 .task-time--active { color: #2e7d32; font-weight: 700; }
+
+/* ══════════════════════════════════════════════
+   家庭模式
+══════════════════════════════════════════════ */
+.family-page { max-width: 860px; margin: 0 auto; }
+
+.family-feedback {
+  background: #e8f5e9; color: #2e7d32; border: 2px solid #a5d6a7;
+  border-radius: 12px; padding: 12px 18px; font-weight: 700;
+  font-size: 0.95rem; margin-bottom: 20px;
+}
+
+.family-members {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px; margin-bottom: 28px;
+}
+
+.family-member-card {
+  border: 2px solid; border-radius: 20px; padding: 22px 16px;
+  text-align: center; position: relative; transition: all .2s;
+  box-shadow: 0 2px 8px rgba(0,0,0,.05);
+}
+
+.family-active-badge {
+  position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+  color: #fff; font-size: 0.75rem; font-weight: 700;
+  padding: 3px 12px; border-radius: 50px; white-space: nowrap;
+}
+
+.family-member-emoji { font-size: 3rem; margin-bottom: 10px; }
+.family-member-name { font-weight: 800; color: #1a1a1a; margin-bottom: 6px; }
+
+.family-simple-badge {
+  display: inline-block; background: #fff3e0; color: #e65100;
+  font-size: 0.78rem; font-weight: 700; padding: 3px 10px;
+  border-radius: 50px; margin-bottom: 8px;
+}
+
+.family-greeting {
+  font-size: 0.82rem; color: #888; font-style: italic;
+  margin-bottom: 12px; line-height: 1.5;
+}
+
+.family-card-actions { display: flex; flex-direction: column; gap: 6px; }
+
+.family-use-btn {
+  color: #fff; border: none; border-radius: 50px;
+  padding: 10px 16px; font-size: 0.88rem; font-weight: 700; cursor: pointer;
+  transition: all .18s;
+}
+.family-use-btn:hover { opacity: .85; }
+
+.family-edit-btn, .family-del-btn {
+  background: none; border: 1.5px solid #e0e0e0; border-radius: 50px;
+  padding: 7px 12px; font-size: 0.82rem; color: #888; cursor: pointer;
+  transition: all .18s;
+}
+.family-edit-btn:hover { border-color: #1976D2; color: #1976D2; }
+.family-del-btn:hover { border-color: #ef5350; color: #ef5350; }
+
+.family-add-card {
+  border: 2px dashed #e0e0e0; border-radius: 20px; padding: 30px 16px;
+  text-align: center; cursor: pointer; transition: all .2s;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: 180px;
+}
+.family-add-card:hover { border-color: var(--primary); background: #fff8f8; }
+
+/* 空状态 */
+.family-empty {
+  text-align: center; padding: 60px 20px;
+}
+.family-empty-emoji { font-size: 5rem; margin-bottom: 16px; }
+.family-empty-title { font-size: 1.2rem; font-weight: 800; margin-bottom: 10px; }
+.family-empty-desc { font-size: 0.95rem; color: #888; line-height: 1.8; margin-bottom: 28px; }
+.family-empty-btn {
+  background: var(--primary); color: #fff; border: none;
+  border-radius: 50px; padding: 16px 36px; font-size: 1.05rem;
+  font-weight: 700; cursor: pointer;
+}
+
+/* 弹层 */
+.family-modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.5);
+  z-index: 300; display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+.family-modal {
+  background: #fff; border-radius: 24px; padding: 28px 24px;
+  max-width: 480px; width: 100%; max-height: 90vh; overflow-y: auto;
+  box-shadow: 0 16px 48px rgba(0,0,0,.25);
+}
+.family-modal-title {
+  font-size: 1.2rem; font-weight: 800; margin-bottom: 20px; text-align: center;
+}
+.family-form-label {
+  font-size: 0.95rem; font-weight: 700; color: #333; margin-bottom: 10px; margin-top: 16px;
+}
+.family-preset-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 4px;
+}
+.family-preset-btn {
+  border: 2px solid #e8e8e8; border-radius: 12px; padding: 10px 8px;
+  background: #fff; cursor: pointer; display: flex; flex-direction: column;
+  align-items: center; gap: 4px; font-size: 0.85rem; font-weight: 600;
+  color: #555; transition: all .18s;
+}
+.family-preset-btn.active, .family-preset-btn:hover {
+  border-color: var(--primary); background: #fff8f8; color: var(--primary);
+}
+.family-preset-btn span:first-child { font-size: 1.6rem; }
+.family-input {
+  width: 100%; border: 2px solid #e0e0e0; border-radius: 12px;
+  padding: 12px 16px; font-size: 1rem; outline: none;
+  transition: border-color .18s;
+}
+.family-input:focus { border-color: var(--primary); }
+.family-theme-grid {
+  display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px;
+}
+.family-theme-btn {
+  padding: 8px 16px; border-radius: 50px; font-size: 0.88rem;
+  font-weight: 700; cursor: pointer; transition: all .18s;
+}
+.family-switch-row {
+  display: flex; align-items: center; justify-content: space-between;
+  background: #fafafa; border: 2px solid #e8e8e8; border-radius: 14px;
+  padding: 14px 18px; margin-top: 16px; margin-bottom: 4px;
+}
+.family-switch-label { font-size: 0.95rem; font-weight: 700; color: #333; }
+.family-switch-desc { font-size: 0.82rem; color: #999; margin-top: 2px; }
+.family-toggle {
+  border: 2px solid #e0e0e0; border-radius: 50px; padding: 8px 18px;
+  font-size: 0.88rem; font-weight: 700; color: #999; cursor: pointer;
+  background: #fff; transition: all .18s;
+}
+.family-toggle--on {
+  background: #e8f5e9; color: #2e7d32; border-color: #a5d6a7;
+}
+.family-modal-btns {
+  display: flex; gap: 12px; justify-content: flex-end; margin-top: 20px;
+}
+.family-cancel-btn {
+  padding: 12px 24px; border-radius: 50px; border: 2px solid #ddd;
+  background: #fff; color: #666; font-size: 0.95rem; cursor: pointer;
+}
+.family-save-btn {
+  padding: 12px 28px; border-radius: 50px; border: none;
+  background: var(--primary); color: #fff; font-size: 0.95rem;
+  font-weight: 700; cursor: pointer;
+}
+.family-save-btn:disabled { opacity: .5; cursor: not-allowed; }
+.family-tip {
+  background: #f5f5f5; border-radius: 14px; padding: 16px 20px;
+  font-size: 0.92rem; color: #666; line-height: 1.7;
+}
+
+@media (max-width: 640px) {
+  .family-members { grid-template-columns: repeat(2, 1fr); }
+  .family-preset-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* ── 语音按钮 ── */
+.voice-btn {
+  background: #f5f5f5; border: 2px solid #e0e0e0; border-radius: 50%;
+  width: 48px; height: 48px; font-size: 1.4rem; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: all .18s; align-self: flex-end;
+}
+.voice-btn:hover { border-color: var(--primary); background: #fff8f8; }
+.voice-btn--active {
+  background: #fff0f0; border-color: var(--primary);
+  animation: pulse 1s infinite;
+}
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(232,69,69,.4); }
+  50% { box-shadow: 0 0 0 8px rgba(232,69,69,.0); }
+}

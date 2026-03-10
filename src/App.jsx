@@ -7,6 +7,7 @@ import Skills  from './pages/Skills.jsx'
 import Chat    from './pages/Chat.jsx'
 import Setup   from './pages/Setup.jsx'
 import Tasks   from './pages/Tasks.jsx'
+import Family  from './pages/Family.jsx'
 
 function App() {
   const location = useLocation()
@@ -31,6 +32,7 @@ function App() {
           <Route path="/"       element={<Status />} />
           <Route path="/chat"   element={<Chat />} />
           <Route path="/tasks"  element={<Tasks />} />
+          <Route path="/family" element={<Family />} />
           <Route path="/skills" element={<Skills />} />
           <Route path="/config" element={<Config />} />
           <Route path="/setup"  element={<Setup />} />
