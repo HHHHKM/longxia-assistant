@@ -1,110 +1,128 @@
-# 🦞 龙虾助手
+<div align="center">
 
-> **五分钟学会，不懂电脑也能用！**
+# 🦞 龙虾助手 · ixx.ai
 
-OpenClaw 可视化管理面板，专为中国用户设计。界面全中文，字体超大，按钮超大，老年人也能轻松使用。
+**公益开源 · 永久免费 · 无广告 · 科技平权**
+
+*任何人都会用的 AI 助手——包括你的父母和祖父母*
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-blue)](https://github.com/HHHHKM/longxia-assistant/releases)
+[![Free](https://img.shields.io/badge/price-永久免费-red)](https://ixx.ai)
+[![Open Source](https://img.shields.io/badge/open%20source-完全开源-orange)](https://github.com/HHHHKM/longxia-assistant)
+
+[官网](https://ixx.ai) · [下载](https://github.com/HHHHKM/longxia-assistant/releases) · [反馈问题](https://github.com/HHHHKM/longxia-assistant/issues) · [参与贡献](#参与贡献)
+
+</div>
 
 ---
 
-## ✨ 功能一览
+## 🌟 这是什么
 
-| 页面 | 功能 |
+龙虾助手是一款**完全免费、永久开源**的 AI 桌面助手。
+
+它的目标只有一个：**让每一个人都能简单地用上 AI**——不论年龄、学历、收入，不论你懂不懂技术。
+
+> 我们相信，科技不应该只属于懂技术的人。
+
+---
+
+## ✨ 核心特点
+
+| 特点 | 说明 |
 |------|------|
-| 🏠 **运行状态** | 一眼看清龙虾助手有没有在跑，绿色=正常，红色=没启动 |
-| ⚙️ **设置** | 可视化填写 AI 密钥、选模型、填 Telegram 令牌，告别 JSON 文件 |
-| 🔧 **功能插件** | 浏览 50+ 插件，一键安装/卸载，带中文说明 |
-| 💬 **对话** | 直接和 AI 聊天，和微信一样简单，发消息收回复 |
+| 🆓 **永久免费** | 不收费，不接广告，不做付费版 |
+| 🔓 **完全开源** | MIT 协议，代码公开透明，可自由使用 |
+| 👴 **老人友好** | 大字体、大按钮、操作步骤极少 |
+| 🚀 **5分钟上手** | 向导式配置，不需要命令行和配置文件 |
+| ⏰ **自然语言定时** | "每天早上8点"代替 cron 表达式 |
+| 🧩 **场景化功能** | 22个中国高频场景模板，按用途分类 |
+| ⭐ **结果收藏** | 好的回答一键收藏，随时复用 |
+| 🔒 **数据本地** | 所有数据只存你自己电脑，永不上传 |
 
 ---
 
-## 🚀 快速启动
+## 📦 下载安装
+
+前往 [Releases 页面](https://github.com/HHHHKM/longxia-assistant/releases) 下载对应系统的安装包：
+
+- 🪟 **Windows**：下载 `.exe` 安装包，双击安装
+- 🍎 **macOS**：下载 `.dmg`，拖入应用程序文件夹（即将发布）
+- 🐧 **Linux**：下载 `.AppImage`，`chmod +x` 后运行，或下载 `.deb`
+
+---
+
+## 🚀 5分钟快速上手
+
+1. **下载安装包**，双击安装
+2. **打开龙虾助手**，进入设置向导
+3. **选择 AI 服务**（推荐 DeepSeek，便宜好用，充10元可用很久）
+4. **填写专属口令**（向导有图文教程手把手教你获取）
+5. **选择聊天方式**（推荐 Telegram）
+6. **完成！** 开始和 AI 对话
+
+---
+
+## 🎯 适合哪些人
+
+- 👴 **退休老人**：大字体大按钮，有问题自动提示
+- 👩‍💼 **职场白领**：日报周报会议纪要，一键生成
+- 🧑‍🎓 **学生**：查资料写作业翻译，买不起付费版也能用
+- 🏪 **小店主**：写文案回客户，不需要请人
+- 📱 **内容创作者**：小红书抖音公众号，每天源源不断的灵感
+- 🌾 **农村用户**：只要会上网，就能用上和城里人一样的 AI
+
+---
+
+## 🛠️ 技术栈
+
+- **框架**：Electron + React 18 + Vite
+- **状态管理**：React Hooks
+- **路由**：React Router v6
+- **构建**：electron-builder
+
+---
+
+## 🤝 参与贡献
+
+欢迎任何形式的贡献！
 
 ```bash
-# 第一步：进入项目文件夹
+# 克隆项目
+git clone https://github.com/HHHHKM/longxia-assistant.git
 cd longxia-assistant
 
-# 第二步：安装依赖（只需要做一次）
+# 安装依赖
 npm install
 
-# 第三步：启动开发服务器
-npm run dev
-```
+# 开发模式
+npm run electron:dev
 
-然后打开浏览器，访问：**http://localhost:5173**
-
----
-
-## 📦 打包发布
-
-```bash
+# 构建
 npm run build
 ```
 
-生成的文件在 `dist/` 文件夹，可以放到任意静态服务器上。
+你可以帮忙：
+- 🐛 提交 Bug 报告
+- 💡 提出新功能建议
+- 🌍 翻译成其他语言
+- 📖 完善文档和教程
+- 💻 贡献代码
 
 ---
 
-## 🔗 需要配合后端使用
+## 📄 开源协议
 
-本面板需要龙虾助手后端服务运行在 `http://localhost:3001`，提供以下接口：
-
-| 接口 | 说明 |
-|------|------|
-| `GET  /api/status` | 获取服务运行状态 |
-| `GET  /api/config` | 读取当前配置 |
-| `POST /api/config` | 保存配置 |
-| `POST /api/chat`   | 发送消息，获取 AI 回复 |
-| `GET  /api/skills/installed` | 获取已安装插件列表 |
-| `POST /api/skills/install`   | 安装插件 |
-| `POST /api/skills/uninstall` | 卸载插件 |
-
-如果后端未启动，面板会显示友好提示，**不会崩溃**。
+MIT License · 自由使用、修改、分发
 
 ---
 
-## 🎨 设计原则（老年友好）
+<div align="center">
 
-- **字体超大**：正文 17px+，标题 28px+，按钮 18px+
-- **按钮超大**：最小触摸高度 52px，不容易点错
-- **高对比度**：深色背景 + 近白色文字，老人眼睛也看得清
-- **全中文**：零英文术语，API Key 叫「专属口令」，Skill 叫「功能插件」
-- **每步有说明**：每个输入框下方有灰色小字解释怎么填
-- **❓帮助按钮**：点开有详细中文解释
-- **操作确认**：安装/卸载前弹窗确认，防止误操作
-- **失败有提示**：错误信息大字显示，✅成功 ❌失败一目了然
-- **手机友好**：底部 Tab 导航，大按钮，适配各种屏幕
+**🦞 龙虾助手 · ixx.ai**
 
----
+公益开源，永久免费，科技平权
 
-## 🗂 项目结构
+*让每一个人都能简单地用上 AI*
 
-```
-longxia-assistant/
-├── src/
-│   ├── pages/
-│   │   ├── Status.jsx   # 🏠 运行状态页
-│   │   ├── Config.jsx   # ⚙️  设置页
-│   │   ├── Skills.jsx   # 🔧 功能插件页
-│   │   └── Chat.jsx     # 💬 对话页
-│   ├── components/
-│   │   ├── Navbar.jsx        # 导航栏（顶部+底部）
-│   │   ├── StatusCard.jsx    # 统计卡片
-│   │   ├── SkillCard.jsx     # 插件卡片
-│   │   ├── HelpButton.jsx    # ❓ 帮助弹窗
-│   │   └── ConfirmDialog.jsx # 操作确认弹窗
-│   ├── api.js       # 所有 API 调用封装
-│   ├── App.jsx      # 路由配置
-│   ├── main.jsx     # 入口
-│   └── index.css    # 全局样式
-├── package.json
-├── vite.config.js
-└── index.html
-```
-
----
-
-## 📮 反馈与贡献
-
-开源地址：https://github.com/openclaw-cn/longxia-assistant（待建）
-
-有问题欢迎提 Issue，我们会尽快回复！
+</div>

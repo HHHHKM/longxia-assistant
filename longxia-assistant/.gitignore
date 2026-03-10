@@ -1,0 +1,12 @@
+node_modules/
+dist/
+release/
+*.AppImage
+*.deb
+*.exe
+*.dmg
+*.rpm
+edict/
+skills/
+.env
+*.log
