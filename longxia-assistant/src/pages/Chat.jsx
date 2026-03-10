@@ -84,10 +84,19 @@ function Chat() {
   const [messages, setMessages] = useState([WELCOME])
   const [input, setInput]       = useState('')
   const [sending, setSending]   = useState(false)
-  const [saved, setSaved]       = useState([])       // 收藏的消息
-  const [showSaved, setShowSaved] = useState(false)  // 显示收藏箱
+  const [saved, setSaved]       = useState([])
+  const [showSaved, setShowSaved] = useState(false)
+  const [recording, setRecording] = useState(false)  // 语音录音中
+  const [voiceSupported, setVoiceSupported] = useState(false)
   const bottomRef = useRef(null)
   const inputRef  = useRef(null)
+  const recognitionRef = useRef(null)
+
+  // 检测语音识别支持
+  useEffect(() => {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition
+    setVoiceSupported(!!SR)
+  }, [])
 
   // 加载收藏
   useEffect(() => {
@@ -104,6 +113,35 @@ function Chat() {
   }
 
   function isSaved(id) { return saved.some(m => m.id === id) }
+
+  // 语音输入
+  function handleVoice() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition
+    if (!SR) return
+
+    if (recording) {
+      recognitionRef.current?.stop()
+      setRecording(false)
+      return
+    }
+
+    const recognition = new SR()
+    recognition.lang = 'zh-CN'
+    recognition.continuous = false
+    recognition.interimResults = false
+
+    recognition.onstart  = () => setRecording(true)
+    recognition.onend    = () => setRecording(false)
+    recognition.onerror  = () => setRecording(false)
+    recognition.onresult = (e) => {
+      const text = e.results[0][0].transcript
+      setInput(prev => prev ? prev + text : text)
+      inputRef.current?.focus()
+    }
+
+    recognitionRef.current = recognition
+    recognition.start()
+  }
 
   function handleDeleteSaved(id) {
     setSaved(prev => {
@@ -230,10 +268,21 @@ function Chat() {
       {/* ── 输入区域 ── */}
       <div className="chat-input-area">
         <div className="chat-input-row">
+          {/* 语音按钮 */}
+          {voiceSupported && (
+            <button
+              className={`voice-btn ${recording ? 'voice-btn--active' : ''}`}
+              onClick={handleVoice}
+              title={recording ? '点击停止' : '点击说话'}
+            >
+              {recording ? '🔴' : '🎤'}
+            </button>
+          )}
+
           <textarea
             ref={inputRef}
             className="chat-textarea"
-            placeholder="请在这里输入您想问的内容……（回车发送，Shift+回车换行）"
+            placeholder={voiceSupported ? "输入文字或点🎤说话……（回车发送）" : "请在这里输入您想问的内容……（回车发送，Shift+回车换行）"}
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
