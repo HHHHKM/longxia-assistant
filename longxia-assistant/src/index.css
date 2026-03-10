@@ -1329,3 +1329,84 @@ body {
   .home-action-label { font-size: 0.92rem; }
   .home-stats { grid-template-columns: repeat(3, 1fr); gap: 8px; }
 }
+
+/* ══════════════════════════════════════════════
+   消息操作栏 + 收藏箱
+══════════════════════════════════════════════ */
+.msg-actions {
+  display: flex; gap: 8px; margin-top: 4px; flex-wrap: wrap;
+}
+.msg-action-btn {
+  background: none; border: 1.5px solid #e0e0e0; border-radius: 50px;
+  padding: 4px 12px; font-size: 0.82rem; color: #888; cursor: pointer;
+  transition: all .18s;
+}
+.msg-action-btn:hover { border-color: var(--primary); color: var(--primary); }
+.msg-action-btn--saved { border-color: #FFB300; color: #F57F17; background: #fffde7; }
+
+/* 收藏箱遮罩 */
+.saved-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.4);
+  z-index: 200; display: flex; align-items: flex-end; justify-content: flex-end;
+}
+.saved-drawer {
+  background: #fff; width: 380px; max-width: 100%; height: 100%;
+  display: flex; flex-direction: column; box-shadow: -4px 0 24px rgba(0,0,0,.15);
+}
+.saved-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 20px; font-size: 1rem; font-weight: 800;
+  border-bottom: 2px solid #f0f0f0;
+}
+.saved-close {
+  background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #999;
+}
+.saved-empty { padding: 40px 20px; text-align: center; color: #aaa; font-size: 0.95rem; }
+.saved-list { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 12px; }
+.saved-item {
+  background: #fafafa; border: 2px solid #e8e8e8; border-radius: 12px; padding: 14px;
+}
+.saved-text { font-size: 0.9rem; color: #333; line-height: 1.6; margin-bottom: 10px; }
+.saved-item-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.saved-action-btn {
+  background: #fff; border: 1.5px solid #e0e0e0; border-radius: 50px;
+  padding: 5px 12px; font-size: 0.82rem; color: #666; cursor: pointer; transition: all .18s;
+}
+.saved-action-btn:hover { border-color: var(--primary); color: var(--primary); }
+.saved-action-btn--del:hover { border-color: #ef5350; color: #ef5350; }
+
+/* 自然语言时间弹层 */
+.time-modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 300;
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+}
+.time-modal {
+  background: #fff; border-radius: 24px; padding: 28px 24px;
+  max-width: 520px; width: 100%; box-shadow: 0 16px 48px rgba(0,0,0,.25);
+}
+.time-modal-title {
+  font-size: 1.15rem; font-weight: 800; color: #1a1a1a; margin-bottom: 20px; text-align: center;
+}
+.time-selector-label {
+  font-size: 1rem; font-weight: 700; color: #333; margin-bottom: 12px;
+}
+.time-selector-grid {
+  display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px;
+}
+.time-option {
+  padding: 8px 16px; border-radius: 50px; border: 2px solid #e0e0e0;
+  background: #fff; font-size: 0.9rem; font-weight: 600; color: #555; cursor: pointer; transition: all .18s;
+}
+.time-option:hover { border-color: var(--primary); color: var(--primary); }
+.time-option--active { background: var(--primary); color: #fff; border-color: var(--primary); }
+.time-modal-btns { display: flex; gap: 12px; justify-content: flex-end; }
+.time-cancel-btn {
+  padding: 12px 24px; border-radius: 50px; border: 2px solid #ddd;
+  background: #fff; color: #666; font-size: 0.95rem; font-weight: 600; cursor: pointer;
+}
+.time-confirm-btn {
+  padding: 12px 28px; border-radius: 50px; border: none;
+  background: var(--primary); color: #fff; font-size: 0.95rem; font-weight: 700; cursor: pointer;
+}
+.time-confirm-btn:disabled { opacity: .6; cursor: not-allowed; }
+.task-time--active { color: #2e7d32; font-weight: 700; }

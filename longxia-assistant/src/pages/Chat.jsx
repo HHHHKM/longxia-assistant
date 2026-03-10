@@ -30,42 +30,51 @@ function ThinkingDots() {
 }
 
 // ── 单条消息气泡 ──
-function MessageBubble({ msg }) {
-  const isUser = msg.role === 'user'
+function MessageBubble({ msg, onSave, saved }) {
+  const isUser  = msg.role === 'user'
   const isError = msg.role === 'error'
+  const isBot   = msg.role === 'assistant' && !msg.thinking
+
+  function handleCopy() {
+    navigator.clipboard?.writeText(msg.text).catch(() => {})
+  }
 
   return (
     <div className={`msg-row ${isUser ? 'msg-row--user' : 'msg-row--bot'}`}>
-      {/* 龙虾头像（助手/错误消息左侧） */}
-      {!isUser && (
-        <div className="msg-avatar">{isError ? '😴' : '🦞'}</div>
-      )}
+      {!isUser && <div className="msg-avatar">{isError ? '😴' : '🦞'}</div>}
 
       <div className="msg-col">
-        {/* 气泡 */}
         <div className={`msg-bubble ${isUser ? 'msg-bubble--user' : isError ? 'msg-bubble--error' : 'msg-bubble--bot'}`}>
           {msg.thinking
-            ? <><ThinkingDots /> <span className="thinking-label">龙虾正在思考……</span></>
+            ? <><ThinkingDots /><span className="thinking-label">龙虾正在思考……</span></>
             : msg.text.split('\n').map((line, i) => (
                 <React.Fragment key={i}>
-                  {line}
-                  {i < msg.text.split('\n').length - 1 && <br />}
+                  {line}{i < msg.text.split('\n').length - 1 && <br />}
                 </React.Fragment>
               ))
           }
         </div>
-        {/* 时间 */}
-        {!msg.thinking && (
-          <div className={`msg-time ${isUser ? 'msg-time--right' : ''}`}>
-            {fmtTime(msg.time)}
+
+        {/* 操作栏：助手消息才显示 */}
+        {isBot && (
+          <div className="msg-actions">
+            <button className="msg-action-btn" onClick={handleCopy} title="复制">📋 复制</button>
+            <button
+              className={`msg-action-btn ${saved ? 'msg-action-btn--saved' : ''}`}
+              onClick={() => onSave(msg)}
+              title={saved ? '已收藏' : '收藏这条回答'}
+            >
+              {saved ? '⭐ 已收藏' : '☆ 收藏'}
+            </button>
           </div>
+        )}
+
+        {!msg.thinking && (
+          <div className={`msg-time ${isUser ? 'msg-time--right' : ''}`}>{fmtTime(msg.time)}</div>
         )}
       </div>
 
-      {/* 用户头像（右侧） */}
-      {isUser && (
-        <div className="msg-avatar msg-avatar--user">👤</div>
-      )}
+      {isUser && <div className="msg-avatar msg-avatar--user">👤</div>}
     </div>
   )
 }
@@ -75,8 +84,34 @@ function Chat() {
   const [messages, setMessages] = useState([WELCOME])
   const [input, setInput]       = useState('')
   const [sending, setSending]   = useState(false)
-  const bottomRef = useRef(null)       // 自动滚到底部
-  const inputRef  = useRef(null)       // 发送后重新聚焦
+  const [saved, setSaved]       = useState([])       // 收藏的消息
+  const [showSaved, setShowSaved] = useState(false)  // 显示收藏箱
+  const bottomRef = useRef(null)
+  const inputRef  = useRef(null)
+
+  // 加载收藏
+  useEffect(() => {
+    try { setSaved(JSON.parse(localStorage.getItem('longxia_saved') || '[]')) } catch {}
+  }, [])
+
+  function handleSave(msg) {
+    setSaved(prev => {
+      const exists = prev.find(m => m.id === msg.id)
+      const next = exists ? prev.filter(m => m.id !== msg.id) : [...prev, { ...msg, savedAt: new Date() }]
+      localStorage.setItem('longxia_saved', JSON.stringify(next))
+      return next
+    })
+  }
+
+  function isSaved(id) { return saved.some(m => m.id === id) }
+
+  function handleDeleteSaved(id) {
+    setSaved(prev => {
+      const next = prev.filter(m => m.id !== id)
+      localStorage.setItem('longxia_saved', JSON.stringify(next))
+      return next
+    })
+  }
 
   // 每次消息更新，滚到最底部
   useEffect(() => {
@@ -153,24 +188,44 @@ function Chat() {
             <div className="chat-topbar-sub">有问题就问我</div>
           </div>
         </div>
-        <button
-          className="btn btn-secondary"
-          style={{ padding: '8px 16px', fontSize: '0.9rem', minHeight: 'auto' }}
-          onClick={handleClear}
-          title="清空对话"
-        >
-          🗑 清空
-        </button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button
+            className="btn btn-secondary"
+            style={{ padding: '8px 14px', fontSize: '0.88rem', minHeight: 'auto' }}
+            onClick={() => setShowSaved(true)}
+            title="收藏箱"
+          >
+            ⭐ 收藏{saved.length > 0 ? `(${saved.length})` : ''}
+          </button>
+          <button
+            className="btn btn-secondary"
+            style={{ padding: '8px 14px', fontSize: '0.88rem', minHeight: 'auto' }}
+            onClick={handleClear}
+            title="清空对话"
+          >
+            🗑 清空
+          </button>
+        </div>
       </div>
 
       {/* ── 消息列表 ── */}
       <div className="chat-messages">
         {messages.map(msg => (
-          <MessageBubble key={msg.id} msg={msg} />
+          <MessageBubble key={msg.id} msg={msg} onSave={handleSave} saved={isSaved(msg.id)} />
         ))}
         {/* 滚动锚点 */}
         <div ref={bottomRef} style={{ height: 1 }} />
       </div>
+
+      {/* ── 收藏箱 ── */}
+      {showSaved && (
+        <SavedDrawer
+          saved={saved}
+          onClose={() => setShowSaved(false)}
+          onDelete={handleDeleteSaved}
+          onReuse={text => { setInput(text); setShowSaved(false); inputRef.current?.focus() }}
+        />
+      )}
 
       {/* ── 输入区域 ── */}
       <div className="chat-input-area">
@@ -201,6 +256,36 @@ function Chat() {
         <div className="chat-input-hint">
           💡 提示：用大白话问就行，比如"帮我写封信"或"这个词是什么意思"
         </div>
+      </div>
+    </div>
+  )
+}
+
+// ── 收藏箱弹层 ──
+function SavedDrawer({ saved, onClose, onDelete, onReuse }) {
+  return (
+    <div className="saved-overlay" onClick={onClose}>
+      <div className="saved-drawer" onClick={e => e.stopPropagation()}>
+        <div className="saved-header">
+          <span>⭐ 我的收藏（{saved.length}条）</span>
+          <button className="saved-close" onClick={onClose}>✕</button>
+        </div>
+        {saved.length === 0 ? (
+          <div className="saved-empty">还没有收藏，聊天时点"☆ 收藏"保存好答案</div>
+        ) : (
+          <div className="saved-list">
+            {[...saved].reverse().map(msg => (
+              <div key={msg.id} className="saved-item">
+                <div className="saved-text">{msg.text.slice(0, 200)}{msg.text.length > 200 ? '…' : ''}</div>
+                <div className="saved-item-actions">
+                  <button className="saved-action-btn" onClick={() => { navigator.clipboard?.writeText(msg.text) }}>📋 复制</button>
+                  <button className="saved-action-btn" onClick={() => onReuse(msg.text)}>🔄 再次使用</button>
+                  <button className="saved-action-btn saved-action-btn--del" onClick={() => onDelete(msg.id)}>🗑 删除</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )

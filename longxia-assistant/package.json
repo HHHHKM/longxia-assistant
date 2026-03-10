@@ -1,7 +1,7 @@
 {
   "name": "longxia-assistant",
   "version": "1.0.0",
-  "description": "🦞 龙虾助手 - OpenClaw 可视化管理面板",
+  "description": "🦞 龙虾助手 - 任何人都会用的 AI 助手",
   "main": "electron/main.cjs",
   "type": "module",
   "scripts": {
@@ -25,6 +25,7 @@
     "concurrently": "^9.2.1",
     "electron": "^33.4.11",
     "electron-builder": "^25.1.8",
+    "sharp": "^0.34.5",
     "vite": "^5.4.10",
     "wait-on": "^8.0.5"
   },
@@ -57,7 +58,7 @@
           ]
         }
       ],
-      "icon": "public/icon.ico"
+      "icon": "public/icon-256.png"
     },
     "mac": {
       "target": [
@@ -69,7 +70,7 @@
           ]
         }
       ],
-      "icon": "public/icon.icns",
+      "icon": "public/icon.png",
       "category": "public.app-category.productivity"
     },
     "linux": {
@@ -107,5 +108,10 @@
         }
       ]
     }
-  }
+  },
+  "author": {
+    "name": "龙虾助手团队",
+    "email": "hello@longxia.app"
+  },
+  "homepage": "https://longxia.app"
 }
