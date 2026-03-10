@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import StatusCard from '../components/StatusCard.jsx'
+import { useNavigate } from 'react-router-dom'
 import { getStatus } from '../api.js'
 
-// ── Mock 数据（服务未启动时展示） ──
 const MOCK_STATUS = {
   running: false,
   todayMessages: 0,
@@ -11,16 +10,21 @@ const MOCK_STATUS = {
   version: '--',
 }
 
-// 运行状态页 — 主页
-// 老人一眼就能看懂"有没有在跑"
-function Status() {
-  const [status, setStatus]           = useState(null)
-  const [loading, setLoading]         = useState(true)
-  const [apiAvailable, setApiAvailable] = useState(false)
-  const [lastRefresh, setLastRefresh]   = useState(null)
-  const [actionMsg, setActionMsg]       = useState(null) // 操作结果反馈
+// 快捷入口
+const QUICK_ACTIONS = [
+  { emoji: '💬', label: '开始聊天',   desc: '问任何问题',         to: '/chat' },
+  { emoji: '⏰', label: '设自动任务', desc: '每天提醒/发新闻',    to: '/tasks' },
+  { emoji: '🧩', label: '功能中心',   desc: '查天气/写文章…',     to: '/skills' },
+  { emoji: '⚙️', label: '设置',       desc: '修改口令/渠道',      to: '/config' },
+]
 
-  // 拉取状态
+function Home() {
+  const navigate = useNavigate()
+  const [status, setStatus]             = useState(null)
+  const [loading, setLoading]           = useState(true)
+  const [apiAvailable, setApiAvailable] = useState(false)
+  const [actionMsg, setActionMsg]       = useState(null)
+
   const fetchStatus = useCallback(async () => {
     setLoading(true)
     try {
@@ -32,143 +36,127 @@ function Status() {
       setApiAvailable(false)
     } finally {
       setLoading(false)
-      setLastRefresh(new Date())
     }
   }, [])
 
-  // 首次加载 + 每 30 秒自动刷新
   useEffect(() => {
     fetchStatus()
     const t = setInterval(fetchStatus, 30000)
     return () => clearInterval(t)
   }, [fetchStatus])
 
-  // 重启服务
   async function handleRestart() {
     setActionMsg(null)
     try {
-      // 优先使用 Electron IPC
       if (window.electronAPI?.restartService) {
         await window.electronAPI.restartService()
-        setActionMsg({ type: 'success', text: '✅ 重启指令已发送！大约需要 5 秒，请稍候……' })
       } else {
         await fetch('http://localhost:3001/api/restart', { method: 'POST' })
-        setActionMsg({ type: 'success', text: '✅ 重启指令已发送！大约需要 5 秒，请稍候……' })
       }
+      setActionMsg({ type: 'success', text: '✅ 重启中，约 5 秒后生效…' })
       setTimeout(fetchStatus, 5000)
     } catch {
-      setActionMsg({ type: 'error', text: '❌ 无法连接服务，请手动在电脑上重启龙虾助手' })
+      setActionMsg({ type: 'error', text: '❌ 无法连接服务，请手动重启龙虾助手' })
     }
-  }
-
-  // 查看日志
-  function handleViewLogs() {
-    try {
-      window.open('http://localhost:3001/api/logs', '_blank')
-    } catch {
-      setActionMsg({ type: 'error', text: '❌ 无法打开日志，请确认服务已启动' })
-    }
+    setTimeout(() => setActionMsg(null), 6000)
   }
 
   const isRunning = status?.running ?? false
 
   return (
-    <div className="status-page">
-      <h1 className="page-title">🏠 运行状态</h1>
+    <div className="home-page">
 
-      {/* ── 老人最关心的：跑没跑 —— 超大横幅 ── */}
-      <div className={`big-status-banner ${isRunning ? 'running' : 'stopped'}`}>
-        <span className="banner-emoji">{isRunning ? '🟢' : '🔴'}</span>
-        <div className={`banner-text ${isRunning ? 'running' : 'stopped'}`}>
-          {isRunning ? '龙虾助手正在运行 ✔' : '龙虾助手未启动'}
-        </div>
-        <div className="banner-subtext">
-          {isRunning
-            ? '服务一切正常，您可以正常使用'
-            : '请打开电脑上的龙虾助手程序，然后刷新此页面'}
+      {/* ── 顶部欢迎区 ── */}
+      <div className="home-header">
+        <div className="home-logo">🦞</div>
+        <div>
+          <div className="home-title">龙虾助手</div>
+          <div className="home-subtitle">您的私人 AI 助理</div>
         </div>
       </div>
 
-      {/* ── API 离线提示 ── */}
-      {!apiAvailable && (
-        <div className="alert alert-warning">
-          <span className="alert-icon">⚠️</span>
-          <span>
-            暂时无法连接到服务（地址：localhost:3001）。
-            下方数据为示例，<strong>不代表真实状态</strong>。
-            请先启动龙虾助手，然后点"刷新状态"。
-          </span>
+      {/* ── 运行状态大横幅 ── */}
+      <div
+        className={`home-status-banner ${isRunning ? 'home-status-banner--ok' : 'home-status-banner--off'}`}
+        onClick={!isRunning ? handleRestart : undefined}
+        style={{ cursor: isRunning ? 'default' : 'pointer' }}
+        title={isRunning ? '' : '点击尝试重启'}
+      >
+        <span className="home-status-dot">{isRunning ? '🟢' : '🔴'}</span>
+        <div>
+          <div className="home-status-text">
+            {loading && !status ? '正在检测…' : isRunning ? '运行正常，随时可用 ✓' : '龙虾助手未启动'}
+          </div>
+          <div className="home-status-sub">
+            {isRunning
+              ? `今日已处理 ${status?.todayMessages ?? 0} 条消息`
+              : apiAvailable === false ? '点击这里尝试重启' : '请打开龙虾助手程序'}
+          </div>
         </div>
+        {!isRunning && (
+          <button className="home-restart-btn" onClick={e => { e.stopPropagation(); handleRestart() }}>
+            🔄 重启
+          </button>
+        )}
+      </div>
+
+      {/* 操作反馈 */}
+      {actionMsg && (
+        <div className={`home-feedback ${actionMsg.type}`}>{actionMsg.text}</div>
       )}
 
-      {/* ── 加载中 ── */}
-      {loading && !status && (
-        <div className="loading-center">
-          <span className="spinner" />
-          <span>正在检测服务状态，请稍候……</span>
-        </div>
-      )}
+      {/* ── 四个大快捷入口 ── */}
+      <div className="home-actions">
+        {QUICK_ACTIONS.map(a => (
+          <button
+            key={a.to}
+            className="home-action-btn"
+            onClick={() => navigate(a.to)}
+          >
+            <span className="home-action-emoji">{a.emoji}</span>
+            <span className="home-action-label">{a.label}</span>
+            <span className="home-action-desc">{a.desc}</span>
+          </button>
+        ))}
+      </div>
 
-      {/* ── 快捷操作按钮 ── */}
-      {status && (
-        <div className="card" style={{ marginBottom: 24 }}>
-          <div style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: 14 }}>
-            🛠 快捷操作
+      {/* ── 今日状态小卡片 ── */}
+      {status && isRunning && (
+        <div className="home-stats">
+          <div className="home-stat-card">
+            <div className="home-stat-icon">💬</div>
+            <div className="home-stat-value">{status.todayMessages ?? 0}</div>
+            <div className="home-stat-label">今日消息</div>
           </div>
-          <div className="service-actions">
-            <button className="btn btn-secondary" onClick={handleRestart} disabled={loading}>
-              🔄 重启服务
-            </button>
-            <button className="btn btn-secondary" onClick={handleViewLogs}>
-              📋 查看日志
-            </button>
-            <button className="btn btn-secondary" onClick={fetchStatus} disabled={loading}>
-              {loading
-                ? <><span className="spinner" style={{ width: 16, height: 16 }} /> 检测中…</>
-                : '🔃 刷新状态'}
-            </button>
-          </div>
-
-          {/* 操作结果反馈 */}
-          {actionMsg && (
-            <div className={`feedback-msg ${actionMsg.type}`}>
-              {actionMsg.text}
+          <div className="home-stat-card">
+            <div className="home-stat-icon">🤖</div>
+            <div className="home-stat-value" style={{ fontSize: '0.9rem' }}>
+              {(status.model ?? '未知').split('/').pop()}
             </div>
-          )}
+            <div className="home-stat-label">当前模型</div>
+          </div>
+          <div className="home-stat-card">
+            <div className="home-stat-icon">📡</div>
+            <div className="home-stat-value">{status.channels?.length ?? 0}</div>
+            <div className="home-stat-label">已连渠道</div>
+          </div>
         </div>
       )}
 
-      {/* ── 详细统计卡片 ── */}
-      {status && (
-        <div className="grid-2">
-          <StatusCard
-            icon="💬"
-            label="今日消息数"
-            value={`${status.todayMessages ?? 0} 条`}
-            sub="今天处理的消息总数"
-          />
-          <StatusCard
-            icon="🤖"
-            label="正在使用的模型"
-            value={status.model ?? '未知'}
-            sub="当前选择的 AI 大模型"
-          />
-          <StatusCard
-            icon="📡"
-            label="已连接的渠道"
-            value={status.channels?.length ? status.channels.join('、') : '暂无连接'}
-            sub={`共连接了 ${status.channels?.length ?? 0} 个聊天平台`}
-          />
-          <StatusCard
-            icon="🕐"
-            label="最后刷新时间"
-            value={lastRefresh ? lastRefresh.toLocaleTimeString('zh-CN') : '--'}
-            sub="每 30 秒自动刷新一次"
-          />
+      {/* ── 未运行时的引导 ── */}
+      {!isRunning && !loading && (
+        <div className="home-guide-box">
+          <p style={{ fontWeight: 700, marginBottom: 10, fontSize: '1rem' }}>🚀 怎么启动龙虾助手？</p>
+          <ol style={{ paddingLeft: 20, lineHeight: 2, color: '#555', fontSize: '0.95rem' }}>
+            <li>在电脑桌面或开始菜单找到"龙虾助手"图标</li>
+            <li>双击打开，等待几秒</li>
+            <li>回到这里，状态会自动变绿 ✓</li>
+          </ol>
         </div>
       )}
+
     </div>
   )
 }
 
-export default Status
+export default Home
