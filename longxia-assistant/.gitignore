@@ -10,3 +10,9 @@ edict/
 skills/
 .env
 *.log
+longxia-assistant/node_modules/
+longxia-assistant/release/
+longxia-assistant/dist/
+longxia-assistant/edict/
+longxia-assistant/skills/
+longxia-website/downloads/
