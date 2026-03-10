@@ -1,0 +1,165 @@
+{
+  "version": 1,
+  "skills": {
+    "self-improving-agent": {
+      "version": "1.0.11",
+      "installedAt": 1772739375513
+    },
+    "tavily-search": {
+      "version": "1.0.0",
+      "installedAt": 1772739379618
+    },
+    "find-skills": {
+      "version": "0.1.0",
+      "installedAt": 1772739383558
+    },
+    "notion": {
+      "version": "1.0.0",
+      "installedAt": 1772739426039
+    },
+    "brave-search": {
+      "version": "1.0.1",
+      "installedAt": 1772739484199
+    },
+    "free-ride": {
+      "version": "1.0.4",
+      "installedAt": 1772739487152
+    },
+    "frontend-design": {
+      "version": "1.0.0",
+      "installedAt": 1772739546269
+    },
+    "lnbits-with-qrcode": {
+      "version": "1.0.2",
+      "installedAt": 1772739601796
+    },
+    "xero": {
+      "version": "1.0.4",
+      "installedAt": 1772739663191
+    },
+    "self-improving": {
+      "version": "1.2.9",
+      "installedAt": 1772739721750
+    },
+    "trello-api": {
+      "version": "1.0.3",
+      "installedAt": 1772739781396
+    },
+    "superdesign": {
+      "version": "1.0.0",
+      "installedAt": 1772739785434
+    },
+    "pipedrive-api": {
+      "version": "1.0.3",
+      "installedAt": 1772739788102
+    },
+    "nano-pdf": {
+      "version": "1.0.0",
+      "installedAt": 1772739962923
+    },
+    "mcporter": {
+      "version": "1.0.0",
+      "installedAt": 1772740021733
+    },
+    "auto-updater": {
+      "version": "1.0.0",
+      "installedAt": 1772740026544
+    },
+    "himalaya": {
+      "version": "1.0.0",
+      "installedAt": 1772740081022
+    },
+    "baidu-search": {
+      "version": "1.1.0",
+      "installedAt": 1772740086083
+    },
+    "model-usage": {
+      "version": "1.0.0",
+      "installedAt": 1772740145160
+    },
+    "video-frames": {
+      "version": "1.0.0",
+      "installedAt": 1772740159729
+    },
+    "trello": {
+      "version": "1.0.0",
+      "installedAt": 1772740164140
+    },
+    "desktop-control": {
+      "version": "1.0.0",
+      "installedAt": 1772740204188
+    },
+    "typeform": {
+      "version": "1.0.4",
+      "installedAt": 1772740260610
+    },
+    "markdown-convert": {
+      "version": "1.0.0",
+      "installedAt": 1772740266270
+    },
+    "google-meet": {
+      "version": "1.0.4",
+      "installedAt": 1772740322117
+    },
+    "google-play": {
+      "version": "1.0.3",
+      "installedAt": 1772740445860
+    },
+    "peekaboo": {
+      "version": "1.0.0",
+      "installedAt": 1772740505171
+    },
+    "pdf": {
+      "version": "0.1.0",
+      "installedAt": 1772740517766
+    },
+    "evolver": {
+      "version": "1.27.2",
+      "installedAt": 1772740527208
+    },
+    "agent-browser": {
+      "version": "0.2.0",
+      "installedAt": 1772740571653
+    },
+    "nano-banana-pro": {
+      "version": "1.0.1",
+      "installedAt": 1772740624840
+    },
+    "skill-creator": {
+      "version": "0.1.0",
+      "installedAt": 1772740681241
+    },
+    "elite-longterm-memory": {
+      "version": "1.2.3",
+      "installedAt": 1772740746039
+    },
+    "imap-smtp-email": {
+      "version": "0.0.9",
+      "installedAt": 1772740801059
+    },
+    "salesforce-api": {
+      "version": "1.0.4",
+      "installedAt": 1772740870567
+    },
+    "stock-market-pro": {
+      "version": "1.2.12",
+      "installedAt": 1772740928733
+    },
+    "web-search": {
+      "version": "1.0.0",
+      "installedAt": 1772741050351
+    },
+    "markdown-converter": {
+      "version": "1.0.0",
+      "installedAt": 1772741055874
+    },
+    "apple-reminders": {
+      "version": "1.0.0",
+      "installedAt": 1772741100562
+    },
+    "n8n-workflow-automation": {
+      "version": "1.0.0",
+      "installedAt": 1772741106105
+    }
+  }
+}

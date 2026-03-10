@@ -1,0 +1,111 @@
+{
+  "name": "longxia-assistant",
+  "version": "1.0.0",
+  "description": "🦞 龙虾助手 - OpenClaw 可视化管理面板",
+  "main": "electron/main.cjs",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "electron": "electron .",
+    "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
+    "dist:win": "electron-builder --win",
+    "dist:mac": "electron-builder --mac",
+    "dist:linux": "electron-builder --linux",
+    "dist": "electron-builder --win --mac"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.27.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.3",
+    "concurrently": "^9.2.1",
+    "electron": "^33.4.11",
+    "electron-builder": "^25.1.8",
+    "vite": "^5.4.10",
+    "wait-on": "^8.0.5"
+  },
+  "build": {
+    "appId": "com.longxia.assistant",
+    "productName": "龙虾助手",
+    "copyright": "Copyright © 2024 龙虾助手",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "electron/**/*",
+      "dist/**/*",
+      "public/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "public",
+        "to": "public"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "public/icon.ico"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "icon": "public/icon.icns",
+      "category": "public.app-category.productivity"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "icon": "public/icon.png",
+      "category": "Utility"
+    },
+    "nsis": {
+      "installerLanguages": [
+        "SimpChinese",
+        "English"
+      ],
+      "language": "2052",
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "龙虾助手"
+    },
+    "dmg": {
+      "title": "龙虾助手 安装",
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    }
+  }
+}

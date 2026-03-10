@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>龙虾助手</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #1a1a1a;
+      color: white;
+      font-family: -apple-system, BlinkMacSystemFont, "Microsoft YaHei", "PingFang SC", sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      overflow: hidden;
+      user-select: none;
+      -webkit-app-region: drag;
+    }
+    .logo {
+      font-size: 80px;
+      margin-bottom: 16px;
+      animation: bounce 2s infinite;
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+    .title {
+      font-size: 30px;
+      font-weight: bold;
+      color: #E84545;
+      letter-spacing: 4px;
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 40px;
+    }
+    .status {
+      font-size: 16px;
+      color: #aaa;
+      margin-bottom: 16px;
+      min-height: 24px;
+      text-align: center;
+    }
+    .progress-wrap {
+      width: 320px;
+      height: 6px;
+      background: #333;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #E84545, #ff6b6b);
+      border-radius: 3px;
+      width: 0%;
+      transition: width 0.4s ease;
+    }
+    .step-labels {
+      display: flex;
+      gap: 4px;
+      margin-top: 20px;
+      flex-direction: column;
+      align-items: flex-start;
+      width: 320px;
+    }
+    .step-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: #555;
+      transition: color 0.3s;
+      padding: 3px 0;
+    }
+    .step-item.active { color: #E84545; font-weight: bold; }
+    .step-item.done { color: #4CAF50; }
+    .step-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #333;
+      flex-shrink: 0;
+      transition: background 0.3s;
+    }
+    .step-item.active .step-dot { background: #E84545; }
+    .step-item.done .step-dot { background: #4CAF50; }
+    .version {
+      position: absolute;
+      bottom: 16px;
+      font-size: 11px;
+      color: #444;
+    }
+  </style>
+</head>
+<body>
+  <div class="logo">🦞</div>
+  <div class="title">龙虾助手</div>
+  <div class="subtitle">您的智能 AI 助理</div>
+  <div class="status" id="status">正在启动...</div>
+  <div class="progress-wrap">
+    <div class="progress-bar" id="progress"></div>
+  </div>
+
+  <!-- 人话版步骤说明 -->
+  <div class="step-labels" id="step-labels">
+    <div class="step-item" id="step-0">
+      <div class="step-dot"></div>
+      <span>检查电脑环境...</span>
+    </div>
+    <div class="step-item" id="step-1">
+      <div class="step-dot"></div>
+      <span>安装 AI 引擎...</span>
+    </div>
+    <div class="step-item" id="step-2">
+      <div class="step-dot"></div>
+      <span>初始化工作区...</span>
+    </div>
+    <div class="step-item" id="step-3">
+      <div class="step-dot"></div>
+      <span>启动 AI 服务...</span>
+    </div>
+    <div class="step-item" id="step-4">
+      <div class="step-dot"></div>
+      <span>准备完成！</span>
+    </div>
+  </div>
+
+  <div class="version" id="version">v1.0.0</div>
+
+  <script>
+    window.updateStatus = function(text, percent, step) {
+      document.getElementById('status').textContent = text
+
+      if (typeof percent === 'number') {
+        document.getElementById('progress').style.width = percent + '%'
+      }
+
+      if (typeof step === 'number') {
+        for (let i = 0; i < 5; i++) {
+          const el = document.getElementById('step-' + i)
+          if (!el) continue
+          if (i < step) {
+            el.className = 'step-item done'
+          } else if (i === step) {
+            el.className = 'step-item active'
+          } else {
+            el.className = 'step-item'
+          }
+        }
+      }
+    }
+  </script>
+</body>
+</html>

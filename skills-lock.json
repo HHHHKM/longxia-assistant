@@ -1,0 +1,455 @@
+{
+  "version": 1,
+  "skills": {
+    "ab-test-setup": {
+      "source": "coreyhaines31/marketingskills",
+      "sourceType": "github",
+      "computedHash": "9c96cb82a1d348a3ceee6fb8d61e876bc02a452fce14d3b746f1419accbf3ad8"
+    },
+    "agent-browser": {
+      "source": "vercel-labs/agent-browser",
+      "sourceType": "github",
+      "computedHash": "57bfa07d34f966bccf791d49c9b6ce507fbba08f7dbf9e2ad15809e2dd29041e"
+    },
+    "agent-email-cli": {
+      "source": "zaddy6/agent-email-skill",
+      "sourceType": "github",
+      "computedHash": "a46f1761a5d9962632e8ed0e6940104fef6cd97b815389f8ac707d39e20b22d8"
+    },
+    "agent-tools": {
+      "source": "tul-sh/skills",
+      "sourceType": "github",
+      "computedHash": "220054a640e514d0bb5be4af7eb9b54f2205b2f6de6a85bd1561f0b0b06d6013"
+    },
+    "algorithmic-art": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "5c2804e8f0d4944c7ce6939a2e4afdcf0cb69c966a505481ed8b96e20bb32eee"
+    },
+    "analytics-tracking": {
+      "source": "coreyhaines31/marketingskills",
+      "sourceType": "github",
+      "computedHash": "1ad3893d31e5df78cb4b4e16801f49acbdf82daed5f775748859ca7dc638d6d0"
+    },
+    "appinsights-instrumentation": {
+      "source": "microsoft/github-copilot-for-azure",
+      "sourceType": "github",
+      "computedHash": "3ddf71098d9bd57c67b551fff1edbfe7a80ebebf0f47745e096cfae386639144"
+    },
+    "audit-website": {
+      "source": "squirrelscan/skills",
+      "sourceType": "github",
+      "computedHash": "2c060290f90340e8bb6009502ec936b8ebb3ff889332a43e24bf210528ebba9f"
+    },
+    "azure-ai": {
+      "source": "microsoft/github-copilot-for-azure",
+      "sourceType": "github",
+      "computedHash": "56c9a059910cc97f9b8c7ffc582a979e2940363ed2bbde2fdcd9c8fb4a500ccd"
+    },
+    "azure-aigateway": {
+      "source": "microsoft/github-copilot-for-azure",
+      "sourceType": "github",
+      "computedHash": "84a284280b11c572e2104e53ec954fe7a79b322d0be3ba02aab5907120765a2d"
+    },
+    "azure-cloud-migrate": {
+      "source": "microsoft/github-copilot-for-azure",
+      "sourceType": "github",
+      "computedHash": "66b60f9233353bd2a902737b32d4621e351c26f48d3fd9ed8156722cbabe4a52"
+    },
+    "azure-compliance": {
+      "source": "microsoft/github-copilot-for-azure",
+      "sourceType": "github",
+      "computedHash": "efaf7e8749cc68802592aa1da8b2d044ca9a94f2eb01a19ffafc7019dc5758e3"
+    },
+    "azure-compute": {
+      "source": "microsoft/github-copilot-for-azure",
+      "sourceType": "github",
+      "computedHash": "bbfedc0ff68d1bc87742b5e2b737d534b7b6947527334d62278504e5814b5cd7"
+    },
+    "azure-cost-optimization": {
+      "source": "microsoft/github-copilot-for-azure",
+      "sourceType": "github",
+      "computedHash": "903e16a3cfa64a505376e1bd30e1013e8f9cde40a6043491725a51862562d43b"
+    },
+    "azure-deploy": {
+      "source": "microsoft/github-copilot-for-azure",
+      "sourceType": "github",
+      "computedHash": "091a3f2939e510b0296596b068728d878b2cc28111bbb08c3500cd9baa57af11"
+    },
+    "azure-diagnostics": {
+      "source": "microsoft/github-copilot-for-azure",
+      "sourceType": "github",
+      "computedHash": "c9941debf15777a31113db2769ae4365fa3bc6d085c01f9c7235ab9afed70989"
+    },
+    "azure-hosted-copilot-sdk": {
+      "source": "microsoft/github-copilot-for-azure",
+      "sourceType": "github",
+      "computedHash": "4a4e1ac9ac186860a8f35f02f0441cf0cee6cd33d823dd00bc541c7457d7f699"
+    },
+    "azure-kusto": {
+      "source": "microsoft/github-copilot-for-azure",
+      "sourceType": "github",
+      "computedHash": "d01fd7031b3fbab811df2fec587b8e44e2ab973ae6983cd7d72e5e64b0c031f4"
+    },
+    "azure-messaging": {
+      "source": "microsoft/github-copilot-for-azure",
+      "sourceType": "github",
+      "computedHash": "9c13386c184fdaa4a5dfbc188e63592108c8592c58411ec7f564d4d406bbec3f"
+    },
+    "azure-prepare": {
+      "source": "microsoft/github-copilot-for-azure",
+      "sourceType": "github",
+      "computedHash": "03b4ceccfe67b9650ce0c2f1cf9937823ddd6ff5b272068450b4298e98f6cafe"
+    },
+    "azure-rbac": {
+      "source": "microsoft/github-copilot-for-azure",
+      "sourceType": "github",
+      "computedHash": "b208cf80132e7fb4e4ce4984187e5b63bd0832753844fd9ccaf60a6a5779a5e8"
+    },
+    "azure-resource-lookup": {
+      "source": "microsoft/github-copilot-for-azure",
+      "sourceType": "github",
+      "computedHash": "27eb417551377dcb4697772c8b43bc1330134190eabf85530ec2d6b1f9b2bb15"
+    },
+    "azure-resource-visualizer": {
+      "source": "microsoft/github-copilot-for-azure",
+      "sourceType": "github",
+      "computedHash": "075aa576fc0a5beb2c8b80d7a8c22cc5b2f919bb4d6953446f012a5969984c7a"
+    },
+    "azure-storage": {
+      "source": "microsoft/github-copilot-for-azure",
+      "sourceType": "github",
+      "computedHash": "91c9e0459a74b405ee6181698ea085e5d04e683e2b6100d44630e90def608f1f"
+    },
+    "azure-validate": {
+      "source": "microsoft/github-copilot-for-azure",
+      "sourceType": "github",
+      "computedHash": "1606cb2920f269871196ba14887f5390d9974b2dcfb1a2670efe0808a2189129"
+    },
+    "better-auth-best-practices": {
+      "source": "better-auth/skills",
+      "sourceType": "github",
+      "computedHash": "a4c830509e85557b59339d8d93a4e243e9e59c686e7678854d39230e12c2a6dc"
+    },
+    "brainstorming": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "computedHash": "5cafa1558b0b6bd4d4c71f23d5567b7fcbbcdb4b0a50b0c5f69a80a3cebaf9b8"
+    },
+    "browser-use": {
+      "source": "browser-use/browser-use",
+      "sourceType": "github",
+      "computedHash": "409117e97ea4689e138a2080bfa94893e31ea216fbd0220d834dbdb791ecbe0e"
+    },
+    "building-native-ui": {
+      "source": "expo/skills",
+      "sourceType": "github",
+      "computedHash": "342df93f481a0dba919f372d6c7b40d2b4bf5b51dd24363aea2e5d0bae27a6fa"
+    },
+    "canvas-design": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "a2fe47d24b3fd8e52faef731fff099c557e698083cd644b2e5695cc4dd8c7715"
+    },
+    "competitor-alternatives": {
+      "source": "coreyhaines31/marketingskills",
+      "sourceType": "github",
+      "computedHash": "bbaf0d378114c7f1581ec63218c9061da983afc1e30887af69ba6ce7ce9cd4c1"
+    },
+    "content-strategy": {
+      "source": "coreyhaines31/marketingskills",
+      "sourceType": "github",
+      "computedHash": "c07914262b7fb32e0a379fd5b8b2d0dc92078c543af2d0914006f2e1d61bc1b4"
+    },
+    "copy-editing": {
+      "source": "coreyhaines31/marketingskills",
+      "sourceType": "github",
+      "computedHash": "3c6241215420e69b36814270a47413b2de9593b5516f5942b7481092f6c63382"
+    },
+    "copywriting": {
+      "source": "coreyhaines31/marketingskills",
+      "sourceType": "github",
+      "computedHash": "2e83eda2221e97166172a0798e9b0379e34080595e107e2fc0cf580e9b3bbf7b"
+    },
+    "design-md": {
+      "source": "google-labs-code/stitch-skills",
+      "sourceType": "github",
+      "computedHash": "d3a4c7d2f2715a33662c8b06ffc16035d01965a8b4ed81c2958fb22ae94760f8"
+    },
+    "dispatching-parallel-agents": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "computedHash": "534432f7d0af6f567ec505ef251e6bbf0a8f2d12a34d9da9517fb131dd9c8646"
+    },
+    "doc-coauthoring": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "b964e4c3ffe13f66f76dd7919073e60c7aec622cd8a8363bb36323188100cf8e"
+    },
+    "docx": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "6962db07127ee540a56e4677f65576d0727668a1d67f7da8bc978f10791c2bfe"
+    },
+    "email-sequence": {
+      "source": "coreyhaines31/marketingskills",
+      "sourceType": "github",
+      "computedHash": "1c373f1f379e9622ccbee5a3d918af8ac13d9afc7b4b4d0457f4b88fcfd178de"
+    },
+    "enhance-prompt": {
+      "source": "google-labs-code/stitch-skills",
+      "sourceType": "github",
+      "computedHash": "71cc23e9ec5fc6361e12453495fa8c683f6cf26f3efaf9b230b0f43e0a32cc96"
+    },
+    "entra-app-registration": {
+      "source": "microsoft/github-copilot-for-azure",
+      "sourceType": "github",
+      "computedHash": "d72e91478541540aaaf0c30dc6caf40cabfae9305d1fa439df99d73458d925cc"
+    },
+    "executing-plans": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "computedHash": "7311ed85870f37e9af1e8354c500e7c4161893d845031eed43dd1d55157da83a"
+    },
+    "form-cro": {
+      "source": "coreyhaines31/marketingskills",
+      "sourceType": "github",
+      "computedHash": "d6d5dcc076f4042b333a34bb707b3bde22bf1a67f9acfb598cb4d4bf1199f3d5"
+    },
+    "free-tool-strategy": {
+      "source": "coreyhaines31/marketingskills",
+      "sourceType": "github",
+      "computedHash": "d423eb75256e6311a5750e578c2f97a0542a3470ef8beb6bdb629d8fa0a02fbb"
+    },
+    "fun-brainstorming": {
+      "source": "roin-orca/skills",
+      "sourceType": "github",
+      "computedHash": "b1873510f9c511f65db575ffb5721b6caa8bac4cf4f81515618b339186f6ca56"
+    },
+    "launch-strategy": {
+      "source": "coreyhaines31/marketingskills",
+      "sourceType": "github",
+      "computedHash": "5d74a25820c4f36d58dd90bafa2f3bfe0350806b699d6a16d2afad53ec7a02fe"
+    },
+    "marketing-ideas": {
+      "source": "coreyhaines31/marketingskills",
+      "sourceType": "github",
+      "computedHash": "6463f11419704994d58248c398b99c6b097eac24f72f4c86bea1565e435e222e"
+    },
+    "marketing-psychology": {
+      "source": "coreyhaines31/marketingskills",
+      "sourceType": "github",
+      "computedHash": "ddec844d01d102687f89749e1d3a9f7a9019010dce1039a7d442189f39726ad4"
+    },
+    "mcp-builder": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "fc68038c900eb801f73ff96130c9f9dba533cc94212ed8435833242f196dedcf"
+    },
+    "microsoft-foundry": {
+      "source": "microsoft/github-copilot-for-azure",
+      "sourceType": "github",
+      "computedHash": "4a35d1d9bad1d3a9dccaf93a4a3b7a24ab3c4ae03c9b48270df886c7ac4b431f"
+    },
+    "next-best-practices": {
+      "source": "vercel-labs/next-skills",
+      "sourceType": "github",
+      "computedHash": "515ba75178bd44875812d9a560bdf14651f86709f89cf1d4f209638e879807f3"
+    },
+    "onboarding-cro": {
+      "source": "coreyhaines31/marketingskills",
+      "sourceType": "github",
+      "computedHash": "9d935c024e0768c8b805852fbf9419c2e8c56be2b9e62e89d43a390008bd1229"
+    },
+    "page-cro": {
+      "source": "coreyhaines31/marketingskills",
+      "sourceType": "github",
+      "computedHash": "9505748dba2319487b285f8ab8c1e5417fce38a512d596e1c9e2e87b34b196e1"
+    },
+    "paid-ads": {
+      "source": "coreyhaines31/marketingskills",
+      "sourceType": "github",
+      "computedHash": "74be53d9e279bafaf1f53e2612cbba0d9e4750df4116496732d877782f0c3a48"
+    },
+    "paywall-upgrade-cro": {
+      "source": "coreyhaines31/marketingskills",
+      "sourceType": "github",
+      "computedHash": "f3955bea72dc22cf5b8e2387ee310a519302ab02518498e045055b1b9bd62a0f"
+    },
+    "popup-cro": {
+      "source": "coreyhaines31/marketingskills",
+      "sourceType": "github",
+      "computedHash": "44138664e994e87a0410405c46385438e0de0b1050450a994d621da4f1c98310"
+    },
+    "pptx": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "6b8b859d26f93aa059c9870d1ab76b44ab69e3d6757ce4a03cc94cb760888073"
+    },
+    "pricing-strategy": {
+      "source": "coreyhaines31/marketingskills",
+      "sourceType": "github",
+      "computedHash": "4312095789cc328883428b1f9bd61549ca44b376aeda8d62bb977efad017e594"
+    },
+    "product-marketing-context": {
+      "source": "coreyhaines31/marketingskills",
+      "sourceType": "github",
+      "computedHash": "21dd05f970ba54406d7405f92240853f809d0fed09ef6ca2a9204abcdd21548a"
+    },
+    "programmatic-seo": {
+      "source": "coreyhaines31/marketingskills",
+      "sourceType": "github",
+      "computedHash": "40b8fe29a6c9cb0606e6fa77aff227cf275e3808adf66e5ef69e02dcf60a7303"
+    },
+    "react:components": {
+      "source": "google-labs-code/stitch-skills",
+      "sourceType": "github",
+      "computedHash": "01a94f035a1c3a1a405f611c0df212433d8973f18bf16e94540875ec58ee7b9b"
+    },
+    "receiving-code-review": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "computedHash": "2760c85d4f4117b0006e7ba755f4bbd61f8f4c185f347999763c97f507274e30"
+    },
+    "referral-program": {
+      "source": "coreyhaines31/marketingskills",
+      "sourceType": "github",
+      "computedHash": "b04bb503500f180280fea269ccdf6f512862413ffa1c872605104cdb5d15bf9e"
+    },
+    "remotion": {
+      "source": "google-labs-code/stitch-skills",
+      "sourceType": "github",
+      "computedHash": "73a794b428f2bb568859f0db83b66219c842a0a088db9818a45ac72c37b6aa66"
+    },
+    "remotion-best-practices": {
+      "source": "remotion-dev/skills",
+      "sourceType": "github",
+      "computedHash": "9851afb52e1b892c43b2af973bda1776ce01fedfdfe704e0cfd70069a3a9c300"
+    },
+    "requesting-code-review": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "computedHash": "93a837ba79c3c3f0b3e503fd9d8b54c638337d73d200c1af3bca9607264bf0e0"
+    },
+    "schema-markup": {
+      "source": "coreyhaines31/marketingskills",
+      "sourceType": "github",
+      "computedHash": "6319ded25235292939050de1c51a98c6633d79f793396506eda2fa8265343758"
+    },
+    "seo-audit": {
+      "source": "coreyhaines31/marketingskills",
+      "sourceType": "github",
+      "computedHash": "ec3109d213dde1747614ad1112ef0e498e04b24e464538968e156dfbfadb2121"
+    },
+    "shadcn-ui": {
+      "source": "google-labs-code/stitch-skills",
+      "sourceType": "github",
+      "computedHash": "dadbca54d35a33fe73e40018611af2179689305bf6da812ab2643987fefd9da3"
+    },
+    "signup-flow-cro": {
+      "source": "coreyhaines31/marketingskills",
+      "sourceType": "github",
+      "computedHash": "8c4b9ce342ccb721eed9a4c1eb0d1ea647e5f1a77db8609509181c62636acf61"
+    },
+    "sleek-design-mobile-apps": {
+      "source": "sleekdotdesign/agent-skills",
+      "sourceType": "github",
+      "computedHash": "344009860c9d6f527b22695696c766cf153a3c90028a51119d08779b530067f0"
+    },
+    "social-content": {
+      "source": "coreyhaines31/marketingskills",
+      "sourceType": "github",
+      "computedHash": "85ffbc05cf88939ba3ff643a315928185af16181470349dfbaad2880047c9900"
+    },
+    "stitch-loop": {
+      "source": "google-labs-code/stitch-skills",
+      "sourceType": "github",
+      "computedHash": "e04912a9719b855afa733cc928d30dde0b8a5b91707ca27b98f0efcb8d9310a9"
+    },
+    "subagent-driven-development": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "computedHash": "1f5831dbfcddda9ac3e706f2ca81a3887fef9598159966d27ef672d86e255242"
+    },
+    "supabase-postgres-best-practices": {
+      "source": "supabase/agent-skills",
+      "sourceType": "github",
+      "computedHash": "9c87c315aed143ee3b34bec8117100f5035e0df09e6b23e1ecc772cff434c9ad"
+    },
+    "systematic-debugging": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "computedHash": "72e9ab72627e4fd8ed26a582e82309a98ecdc4f6e1c99418430ac05682c9e91d"
+    },
+    "tailwind-design-system": {
+      "source": "wshobson/agents",
+      "sourceType": "github",
+      "computedHash": "d0e4d2ba5a99cdc6e264d3927d1d81e85e79f551c8e246fa0a86123217eaad94"
+    },
+    "test-driven-development": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "computedHash": "126f1ebf6ccd414f42544f6e83d8cc5adb089e1108eaffb7c400701e37eecd9f"
+    },
+    "ui-ux-pro-max": {
+      "source": "nextlevelbuilder/ui-ux-pro-max-skill",
+      "sourceType": "github",
+      "computedHash": "e688fcd4c5693e14ebd00d48e982dbd2be060fbea89f5f60531e79c704a1bc28"
+    },
+    "using-git-worktrees": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "computedHash": "52bbb4b6e80918e83e92a1514f3b3757712154c2a8a42de24919e48a794c54fc"
+    },
+    "using-superpowers": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "computedHash": "4310d74a75f89e81f999bfa5b10886be977f95ee0c7fc1d547f94e32c7c8d7f3"
+    },
+    "vercel-composition-patterns": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "computedHash": "f98931159fa9c7fed043bcd18a891a46dcf89ababa38df13a4c5b7b30dc0ce07"
+    },
+    "vercel-react-best-practices": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "computedHash": "3462ec83f862abb2d532953df33a4dbf87f4616849da5d4b5cc7c13601aaf997"
+    },
+    "vercel-react-native-skills": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "computedHash": "2e9088a7333666d8c2833b8ff58bd51b955501c42b4c7244f72b4cbf22dafcc4"
+    },
+    "verification-before-completion": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "computedHash": "9b446f0c7fe1cfb560b1d34439523b1a76d5f177290007b2c053a1c749a4a8ba"
+    },
+    "web-design-guidelines": {
+      "source": "vercel-labs/agent-skills",
+      "sourceType": "github",
+      "computedHash": "a6a44d5498f7e8f68289902f3dedfc6f38ae0cee1e96527c80724cf27f727c2a"
+    },
+    "webapp-testing": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "cf8e5916d474886bd67b09691247f43f331523008b7d366064bc607ab42d6302"
+    },
+    "writing-plans": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "computedHash": "8c536ae03ef3ab1fa974c0e50a65d803acddf5d4ee7cac68ab25a39b9e338611"
+    },
+    "writing-skills": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "computedHash": "7cd0c064b5a62ffdc9cfff539a7b4d8d4a7792c8f0d544436bea021f08632e7b"
+    },
+    "xlsx": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "efd0c8011cf0677d8075cf93867ecec804f9a8754a777e1d2fdb46197e9c247f"
+    }
+  }
+}
