@@ -84,6 +84,14 @@ export default function ModelControl() {
     setSwitching(model.id)
     try {
       await window.electronAPI.saveConfig(group.id, currentApiKey, currentTgToken)
+      // 额外保存 model 到配置
+      try {
+        await fetch('http://localhost:18789/api/v1/config', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ model: model.id })
+        })
+      } catch {}
       setCurrentModel(model.id)
       setSuccessMsg({ type: 'success', text: `✅ 已切换到 ${model.name}，下次对话生效` })
     } catch {
