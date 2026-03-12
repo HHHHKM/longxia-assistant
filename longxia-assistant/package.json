@@ -58,7 +58,9 @@
           ]
         }
       ],
-      "icon": "public/icon-256.png"
+      "icon": "public/icon-256.png",
+      "executableName": "longxia-assistant",
+      "signAndEditExecutable": false
     },
     "mac": {
       "target": [
@@ -83,8 +85,8 @@
     },
     "nsis": {
       "installerLanguages": [
-        "SimpChinese",
-        "English"
+        "zh_CN",
+        "en_US"
       ],
       "language": "2052",
       "oneClick": false,
@@ -107,7 +109,8 @@
           "path": "/Applications"
         }
       ]
-    }
+    },
+    "asar": true
   },
   "author": {
     "name": "龙虾助手团队",

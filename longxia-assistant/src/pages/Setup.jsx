@@ -57,6 +57,42 @@ const PROVIDERS = [
   },
 ]
 
+
+// ── 服务商 API 地址映射 ──────────────────────────────
+const PROVIDER_BASE_URLS = {
+  deepseek:    'https://api.deepseek.com/v1',
+  siliconflow: 'https://api.siliconflow.cn/v1',
+  qwen:        'https://dashscope.aliyuncs.com/compatible-mode/v1',
+  openai:      'https://api.openai.com/v1',
+}
+
+// ── 测试 API 连接（带超时+友好错误） ────────────────────
+async function testAPIConnection(provider, apiKey) {
+  const baseUrl = PROVIDER_BASE_URLS[provider] || 'https://api.openai.com/v1'
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 10000)
+  try {
+    const res = await fetch(`${baseUrl}/models`, {
+      headers: { Authorization: `Bearer ${apiKey}` },
+      signal: controller.signal,
+    })
+    clearTimeout(timeoutId)
+    if (res.status === 401 || res.status === 403) {
+      return { ok: false, msg: '❌ 专属口令不对，请检查后重试' }
+    }
+    if (!res.ok) {
+      return { ok: false, msg: `❌ 连接失败（${res.status}），请确认口令填写正确` }
+    }
+    return { ok: true, msg: '✅ 连接成功！口令验证通过' }
+  } catch (err) {
+    clearTimeout(timeoutId)
+    if (err.name === 'AbortError') {
+      return { ok: false, msg: '⏱ 连接超时（10秒），请检查网络是否正常' }
+    }
+    return { ok: false, msg: '❌ 连接失败，请确认口令填写正确' }
+  }
+}
+
 // ─── 渠道数据 ────────────────────────────────────────
 const CHANNELS = [
   {
@@ -255,6 +291,8 @@ export default function Setup() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [qqAlert, setQqAlert] = useState(false)
+  const [testResult, setTestResult] = useState(null)  // { ok, msg }
+  const [testing, setTesting] = useState(false)
 
   const selectedProvider = PROVIDERS.find(p => p.id === provider)
   const selectedChannel = CHANNELS.find(c => c.id === channel)
@@ -272,7 +310,15 @@ export default function Setup() {
   // ── 保存 AI 配置 ──────────────────────────────────
   async function handleSaveProvider() {
     if (!apiKey.trim()) { setError('请先填写您的专属口令'); return }
-    setSaving(true); setError('')
+    setSaving(true); setError(''); setTestResult(null)
+    // ── 先测试 API 连接 ──
+    const test = await testAPIConnection(provider, apiKey.trim())
+    if (!test.ok) {
+      setError(test.msg)
+      setSaving(false)
+      return
+    }
+    setTestResult(test)
     try {
       if (window.electronAPI) {
         const result = await window.electronAPI.saveConfig(provider, apiKey.trim())
@@ -532,7 +578,12 @@ export default function Setup() {
               )}
             </div>
 
-            {error && <div style={styles.errorBox}>⚠️ {error}</div>}
+            {error && <div style={styles.errorBox}>{error}</div>}
+            {testResult?.ok && (
+              <div style={{ background: '#f1fff4', border: '1.5px solid #c8e6c9', borderRadius: 10, padding: '10px 16px', marginBottom: 12, color: '#2E7D32', fontWeight: 600 }}>
+                {testResult.msg}
+              </div>
+            )}
 
             {/* 非 deepseek/siliconflow 的链接 */}
             {selectedProvider.id !== 'deepseek' && selectedProvider.id !== 'siliconflow' && (
@@ -553,7 +604,7 @@ export default function Setup() {
                 disabled={!apiKey.trim() || saving}
                 onClick={handleSaveProvider}
               >
-                {saving ? '⏳ 正在保存...' : '下一步 →'}
+                {saving ? '⏳ 正在验证口令...' : '验证并下一步 →'}
               </button>
             </div>
           </div>

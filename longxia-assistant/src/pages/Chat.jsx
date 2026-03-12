@@ -10,13 +10,29 @@ function fmtTime(d) {
   return d.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
 }
 
-// ── 欢迎消息 ──
-const WELCOME = {
-  id: 0,
-  role: 'assistant',
-  text: '您好！我是🦞龙虾助手，很高兴为您服务！\n\n您可以用大白话问我任何问题，比如：\n• "帮我写一封请假信"\n• "今天天气好吗"\n• "给我讲个笑话"\n\n请直接在下方输入，然后点"发  送"按钮。',
-  time: new Date(),
+// ── 家庭成员隔离 ──
+function getActiveMemberId() {
+  return localStorage.getItem('longxia_family_active') || 'default'
 }
+function getMemberChatKey() {
+  return `longxia_saved_${getActiveMemberId()}`
+}
+function getMemberWelcomeText() {
+  try {
+    const members = JSON.parse(localStorage.getItem('longxia_family') || '[]')
+    const active = members.find(m => String(m.id) === getActiveMemberId())
+    const name = active?.name || '您'
+    return `您好，${name}！我是🦞龙虾助手，很高兴为您服务！\n\n您可以用大白话问我任何问题，比如：\n• "帮我写一封请假信"\n• "今天天气好吗"\n• "给我讲个笑话"\n\n请直接在下方输入，然后点"发  送"按钮。`
+  } catch {
+    return '您好！我是🦞龙虾助手，很高兴为您服务！\n\n请直接在下方输入，然后点"发  送"按钮。'
+  }
+}
+function makeWelcome() {
+  return { id: 0, role: 'assistant', text: getMemberWelcomeText(), time: new Date() }
+}
+
+// ── 欢迎消息 ──
+const WELCOME = makeWelcome()
 
 // ── 打字动画组件（三个点跳动） ──
 function ThinkingDots() {
@@ -100,14 +116,14 @@ function Chat() {
 
   // 加载收藏
   useEffect(() => {
-    try { setSaved(JSON.parse(localStorage.getItem('longxia_saved') || '[]')) } catch {}
+    try { setSaved(JSON.parse(localStorage.getItem(getMemberChatKey()) || '[]')) } catch {}
   }, [])
 
   function handleSave(msg) {
     setSaved(prev => {
       const exists = prev.find(m => m.id === msg.id)
       const next = exists ? prev.filter(m => m.id !== msg.id) : [...prev, { ...msg, savedAt: new Date() }]
-      localStorage.setItem('longxia_saved', JSON.stringify(next))
+      localStorage.setItem(getMemberChatKey(), JSON.stringify(next))
       return next
     })
   }
@@ -146,10 +162,20 @@ function Chat() {
   function handleDeleteSaved(id) {
     setSaved(prev => {
       const next = prev.filter(m => m.id !== id)
-      localStorage.setItem('longxia_saved', JSON.stringify(next))
+      localStorage.setItem(getMemberChatKey(), JSON.stringify(next))
       return next
     })
   }
+
+  // 读取 Skills 页传过来的试用提示词
+  useEffect(() => {
+    const prefill = sessionStorage.getItem('longxia_chat_prefill')
+    if (prefill) {
+      setInput(prefill)
+      sessionStorage.removeItem('longxia_chat_prefill')
+      inputRef.current?.focus()
+    }
+  }, [])
 
   // 每次消息更新，滚到最底部
   useEffect(() => {

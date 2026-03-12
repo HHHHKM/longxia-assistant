@@ -1,28 +1,52 @@
 import React from 'react'
+import { useState, useEffect } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
+import { t } from '../i18n/index.js'
 
-// V1 导航：首页 / 聊天 / 自动任务 / 功能中心 / 设置
 const LINKS = [
-  { to: '/',        icon: '🏠', label: '首页',     end: true },
-  { to: '/chat',    icon: '💬', label: '聊天',     end: false },
-  { to: '/tasks',   icon: '⏰', label: '自动任务', end: false },
-  { to: '/skills',  icon: '🧩', label: '功能中心', end: false },
-  { to: '/family',  icon: '👨‍👩‍👧', label: '家庭',     end: false },
-  { to: '/care',    icon: '❤️', label: '关怀',     end: false },
-  { to: '/config',  icon: '⚙️', label: '设置',     end: false },
+  { to: '/', icon: '🦞', labelKey: 'nav.home', end: true },
+  { to: '/chat', icon: '💬', labelKey: 'nav.chat', end: false },
+  { to: '/tasks', icon: '⏰', labelKey: 'nav.tasks', end: false },
+  { to: '/family', icon: '👨‍👩‍👧', labelKey: 'nav.family', end: false },
+  { to: '/care', icon: '❤️', labelKey: 'nav.care', end: false },
+  { to: '/skills', icon: '🧩', labelKey: 'nav.skills', end: false },
+  { to: '/config', icon: '⚙️', labelKey: 'nav.config', end: false },
+]
+
+// 仅在侧边导航栏显示的额外链接（案例 & 下载 & 语言），不放底部导航以免过挤
+const EXTRA_LINKS = [
+  { to: '/cases', icon: '🌟', labelKey: 'nav.cases', end: false },
+  { to: '/download', icon: '⬇️', labelKey: 'nav.download', end: false },
+  { to: '/model',    icon: '🧠', labelKey: 'nav.model',    end: false },
+  { to: '/update',   icon: '🔄', labelKey: 'nav.update',   end: false },
+  { to: '/elder',    icon: '👴', labelKey: 'nav.elder',    end: false },
+  { to: '/language', icon: '🌐', labelKey: 'nav.language', end: false },
 ]
 
 function Navbar() {
   const location = useLocation()
+  const [theme, setTheme] = useState(() => localStorage.getItem('longxia_theme') || 'light')
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme)
+    localStorage.setItem('longxia_theme', theme)
+  }, [theme])
+
+  function toggleTheme() {
+    setTheme(t => t === 'light' ? 'dark' : 'light')
+  }
 
   return (
     <>
-      {/* ── 桌面顶部导航 ── */}
       <nav className="navbar">
         <div className="navbar-brand">
-          <span className="navbar-logo">🦞</span>
-          <span className="navbar-title">龙虾助手</span>
+          <img src="/lobster-icon.jpg" style={{width:28,height:28,objectFit:"cover",borderRadius:8,flexShrink:0}} alt=""/>
+          <span className="navbar-title">{t('app.name')}</span>
+          <span className="navbar-tagline">{t('app.tagline')}</span>
         </div>
+        <button className="theme-toggle-btn" onClick={toggleTheme} title="切换主题">
+          {theme === 'light' ? '🌙' : '☀️'}
+        </button>
         <div className="navbar-links">
           {LINKS.map(l => (
             <NavLink
@@ -32,27 +56,32 @@ function Navbar() {
               className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}
             >
               <span className="nav-icon">{l.icon}</span>
-              <span className="nav-label">{l.label}</span>
+              <span className="nav-label">{t(l.labelKey)}</span>
+            </NavLink>
+          ))}
+          <div className="navbar-divider" />
+          {EXTRA_LINKS.map(l => (
+            <NavLink
+              key={l.to}
+              to={l.to}
+              end={l.end}
+              className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}
+            >
+              <span className="nav-icon">{l.icon}</span>
+              <span className="nav-label">{t(l.labelKey)}</span>
             </NavLink>
           ))}
         </div>
       </nav>
 
-      {/* ── 手机底部 Tab 栏 ── */}
       <div className="bottom-nav">
         <div className="bottom-nav-inner">
           {LINKS.map(l => {
-            const active = l.end
-              ? location.pathname === l.to
-              : location.pathname.startsWith(l.to)
+            const active = l.end ? location.pathname === l.to : location.pathname.startsWith(l.to)
             return (
-              <NavLink
-                key={l.to}
-                to={l.to}
-                className={active ? 'bottom-nav-item active' : 'bottom-nav-item'}
-              >
+              <NavLink key={l.to} to={l.to} className={active ? 'bottom-nav-item active' : 'bottom-nav-item'}>
                 <span className="bn-icon">{l.icon}</span>
-                <span>{l.label}</span>
+                <span>{t(l.labelKey)}</span>
               </NavLink>
             )
           })}

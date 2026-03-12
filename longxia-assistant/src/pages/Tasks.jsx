@@ -1,4 +1,13 @@
+// ── 家庭成员任务隔离 ──
+function getActiveMemberId() {
+  return localStorage.getItem('longxia_family_active') || 'default'
+}
+function getMemberTaskKey() {
+  return `longxia_tasks_${getActiveMemberId()}`
+}
+
 import React, { useState, useEffect } from 'react'
+import { createCronJob, deleteCronJob, listCronJobs } from '../api.js'
 
 // ── 自然语言时间选项 ──────────────────────────────────
 const TIME_OPTIONS = [
@@ -53,6 +62,13 @@ const TASK_TEMPLATES = [
 
 const CATEGORIES = ['全部', '生活服务', '工作办公', '内容创作', '理财资讯', '健康生活']
 
+const QUICK_SCENES = [
+  { emoji: '💊', title: '吃药提醒', templateId: 'medicine-remind' },
+  { emoji: '🌤️', title: '今天天气', templateId: 'weather-daily' },
+  { emoji: '✅', title: '每日待办', templateId: 'morning-todo' },
+  { emoji: '📋', title: '工作总结', templateId: 'daily-report' },
+]
+
 // ── 自然语言时间选择器 ────────────────────────────────
 function TimeSelector({ value, onChange }) {
   return (
@@ -85,14 +101,21 @@ export default function Tasks() {
 
   useEffect(() => {
     try {
-      const saved = JSON.parse(localStorage.getItem('longxia_tasks') || '[]')
+      const saved = JSON.parse(localStorage.getItem(getMemberTaskKey()) || '[]')
       setMyTasks(saved)
     } catch { setMyTasks([]) }
+    // 尝试从 API 同步 cron 任务（失败时静默降级）
+    ;(async () => {
+      try {
+        await listCronJobs()
+        // 可扩展：将 API 返回的 jobs 与本地 tasks 对比
+      } catch {}
+    })()
   }, [])
 
   function saveMyTasks(tasks) {
     setMyTasks(tasks)
-    localStorage.setItem('longxia_tasks', JSON.stringify(tasks))
+    localStorage.setItem(getMemberTaskKey(), JSON.stringify(tasks))
   }
 
   function showMsg(text) {
@@ -111,10 +134,12 @@ export default function Tasks() {
     setAddingId(template.id)
     const timeOpt = TIME_OPTIONS.find(t => t.id === pendingTimeId) || TIME_OPTIONS[0]
     try {
-      if (window.electronAPI?.createTask) {
-        await window.electronAPI.createTask({ id: template.id, name: template.name, cron: timeOpt.cron })
-      }
-      saveMyTasks([...myTasks, { id: template.id, timeId: pendingTimeId }])
+      let jobId = null
+      try {
+        const result = await createCronJob({ name: template.name, cron: timeOpt.cron, message: template.desc })
+        jobId = result?.id ?? null
+      } catch {}
+      saveMyTasks([...myTasks, { id: template.id, timeId: pendingTimeId, jobId }])
       showMsg(`✅ 「${template.name}」已开启！${timeOpt.label}自动执行`)
     } catch {
       showMsg('⚠️ 开启失败，请检查服务是否正常运行')
@@ -128,7 +153,10 @@ export default function Tasks() {
   async function handleRemove(template) {
     setRemovingId(template.id)
     try {
-      if (window.electronAPI?.removeTask) await window.electronAPI.removeTask(template.id)
+      const task = myTasks.find(t => t.id === template.id)
+      if (task?.jobId) {
+        try { await deleteCronJob(task.jobId) } catch {}
+      }
       saveMyTasks(myTasks.filter(t => t.id !== template.id))
       showMsg(`🗑️ 「${template.name}」已关闭`)
     } catch {
@@ -185,6 +213,28 @@ export default function Tasks() {
           </div>
         </div>
       )}
+
+      {/* ── 快速入口 ── */}
+      <div className="section">
+        <h2 className="section-title">⚡ 高频场景入口</h2>
+        <div className="quick-scene-grid">
+          {QUICK_SCENES.map(item => {
+            const template = TASK_TEMPLATES.find(t => t.id === item.templateId)
+            if (!template) return null
+            return (
+              <button
+                key={item.templateId}
+                className="quick-scene-card"
+                onClick={() => isAdded(template.id) ? handleRemove(template) : handleClickAdd(template)}
+              >
+                <div className="quick-scene-emoji">{item.emoji}</div>
+                <div className="quick-scene-title">{item.title}</div>
+                <div className="quick-scene-state">{isAdded(template.id) ? '已开启' : '一键开启'}</div>
+              </button>
+            )
+          })}
+        </div>
+      </div>
 
       {/* ── 我的任务 ── */}
       {myTaskList.length > 0 && (

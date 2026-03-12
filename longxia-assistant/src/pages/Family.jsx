@@ -30,6 +30,7 @@ function newMember(id) {
     fontSize: 'normal',   // normal | large
     simpleMode: false,     // 极简模式（老人）
     greeting: '',          // 自定义问候语
+    avatar: null,          // base64 头像图片
   }
 }
 
@@ -98,6 +99,24 @@ export default function Family() {
     setTimeout(() => setSaved(false), 2500)
   }
 
+  function handleShare(member) {
+    const config = {
+      name: member.name,
+      emoji: member.emoji,
+      themeId: member.themeId,
+      simpleMode: member.simpleMode,
+      greeting: member.greeting,
+    }
+    const encoded = btoa(encodeURIComponent(JSON.stringify(config)))
+    const shareUrl = `${window.location.origin}/#/family/setup?config=${encoded}`
+    navigator.clipboard?.writeText(shareUrl).then(() => {
+      setSaved('share')
+      setTimeout(() => setSaved(false), 3000)
+    }).catch(() => {
+      prompt('复制此链接发给子女，让他们帮你配置：', shareUrl)
+    })
+  }
+
   function updateForm(key, val) {
     setForm(prev => ({ ...prev, [key]: val }))
   }
@@ -114,6 +133,13 @@ export default function Family() {
       {saved && (
         <div className="family-feedback">✅ 已保存</div>
       )}
+
+      <div className="family-entry-banner">
+        <div className="family-entry-title">🏡 子女先帮忙设置，父母以后直接用</div>
+        <div className="family-entry-desc">
+          给每位家人准备专属入口。父母只需要点自己的头像，就能进入更简单的大字版界面。
+        </div>
+      </div>
 
       {/* ── 成员列表 ── */}
       {members.length > 0 && (
@@ -136,12 +162,21 @@ export default function Family() {
                     当前使用中
                   </div>
                 )}
-                <div className="family-member-emoji">{m.emoji}</div>
+                <div className="family-member-emoji">
+                  {m.avatar
+                    ? <img src={m.avatar} alt={m.name} className="family-member-avatar-img"/>
+                    : m.emoji}
+                </div>
                 <div className="family-member-name" style={{ fontSize: m.fontSize === 'large' ? '1.15rem' : '1rem' }}>
                   {m.name}
                 </div>
                 {m.simpleMode && (
                   <div className="family-simple-badge">老人模式</div>
+                )}
+                {m.simpleMode && (
+                  <div className="family-elder-active-tag">
+                    👴 老人模式已开启
+                  </div>
                 )}
                 {m.greeting && (
                   <div className="family-greeting">"{m.greeting}"</div>
@@ -157,6 +192,9 @@ export default function Family() {
                   <button className="family-edit-btn" onClick={() => handleEditOpen(m)}>编辑</button>
                   <button className="family-del-btn" onClick={() => handleDelete(m.id)}>删除</button>
                 </div>
+                <button className="family-share-btn" onClick={() => handleShare(m)}>
+                  🔗 分享给子女配置
+                </button>
               </div>
             )
           })}
@@ -211,6 +249,39 @@ export default function Family() {
                   <span>{p.name}</span>
                 </button>
               ))}
+            </div>
+
+            {/* 头像上传（可选） */}
+            <div className="family-form-label">上传头像（可选）</div>
+            <div className="family-avatar-upload">
+              {form.avatar ? (
+                <div className="family-avatar-preview">
+                  <img src={form.avatar} alt="头像" className="family-avatar-img"/>
+                  <button
+                    className="family-avatar-remove"
+                    onClick={() => updateForm('avatar', null)}
+                  >✕ 删除</button>
+                </div>
+              ) : (
+                <label className="family-avatar-label">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    style={{display:'none'}}
+                    onChange={e => {
+                      const file = e.target.files[0]
+                      if (!file) return
+                      const reader = new FileReader()
+                      reader.onload = ev => updateForm('avatar', ev.target.result)
+                      reader.readAsDataURL(file)
+                    }}
+                  />
+                  <div className="family-avatar-placeholder">
+                    📷 点击上传照片
+                    <span>支持 JPG / PNG，建议正方形</span>
+                  </div>
+                </label>
+              )}
             </div>
 
             {/* 名字 */}

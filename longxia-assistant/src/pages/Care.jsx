@@ -1,4 +1,13 @@
+// ── 家庭成员 Care 隔离 ──
+function getActiveMemberId() {
+  return localStorage.getItem('longxia_family_active') || 'default'
+}
+function getMemberCareKey() {
+  return `longxia_care_${getActiveMemberId()}`
+}
+
 import React, { useState, useEffect } from 'react'
+import { createCronJob, deleteCronJob } from '../api.js'
 
 // ── 关怀推送模板 ──────────────────────────────────────
 const CARE_TEMPLATES = [
@@ -97,14 +106,14 @@ const CARE_TEMPLATES = [
 const CATEGORIES = ['全部', '日常关怀', '健康提醒', '节日关怀', '资讯推送']
 
 const TIME_OPTIONS = [
-  { label: '每天早上 7 点', id: 'daily-7' },
-  { label: '每天早上 8 点', id: 'daily-8' },
-  { label: '每天早上 9 点', id: 'daily-9' },
-  { label: '每天上午 10 点', id: 'daily-10' },
-  { label: '每天中午 12 点', id: 'daily-12' },
-  { label: '每天下午 5 点', id: 'daily-17' },
-  { label: '每天晚上 8 点', id: 'daily-20' },
-  { label: '每天晚上 9 点', id: 'daily-21' },
+  { label: '每天早上 7 点', id: 'daily-7', cron: '0 7 * * *' },
+  { label: '每天早上 8 点', id: 'daily-8', cron: '0 8 * * *' },
+  { label: '每天早上 9 点', id: 'daily-9', cron: '0 9 * * *' },
+  { label: '每天上午 10 点', id: 'daily-10', cron: '0 10 * * *' },
+  { label: '每天中午 12 点', id: 'daily-12', cron: '0 12 * * *' },
+  { label: '每天下午 5 点', id: 'daily-17', cron: '0 17 * * *' },
+  { label: '每天晚上 8 点', id: 'daily-20', cron: '0 20 * * *' },
+  { label: '每天晚上 9 点', id: 'daily-21', cron: '0 21 * * *' },
 ]
 
 export default function Care() {
@@ -116,12 +125,12 @@ export default function Care() {
   const [successMsg, setSuccessMsg] = useState(null)
 
   useEffect(() => {
-    try { setEnabled(JSON.parse(localStorage.getItem('longxia_care') || '[]')) } catch {}
+    try { setEnabled(JSON.parse(localStorage.getItem(getMemberCareKey()) || '[]')) } catch {}
   }, [])
 
   function saveEnabled(list) {
     setEnabled(list)
-    localStorage.setItem('longxia_care', JSON.stringify(list))
+    localStorage.setItem(getMemberCareKey(), JSON.stringify(list))
   }
 
   function isOn(id) { return enabled.some(e => e.id === id) }
@@ -129,6 +138,11 @@ export default function Care() {
 
   function handleToggle(t) {
     if (isOn(t.id)) {
+      const item = getItem(t.id)
+      // 静默删除 cron job
+      if (item?.jobId) {
+        try { deleteCronJob(item.jobId) } catch {}
+      }
       saveEnabled(enabled.filter(e => e.id !== t.id))
       setSuccessMsg(`🔕 「${t.name}」已关闭`)
     } else {
@@ -139,9 +153,19 @@ export default function Care() {
     setTimeout(() => setSuccessMsg(null), 2500)
   }
 
-  function handleConfirm() {
+  async function handleConfirm() {
     const t = CARE_TEMPLATES.find(x => x.id === editingId)
-    saveEnabled([...enabled, { id: editingId, timeId: pendingTime, target: pendingTarget }])
+    const timeOpt = TIME_OPTIONS.find(o => o.id === pendingTime)
+    let jobId = null
+    try {
+      const result = await createCronJob({
+        name: t?.name ?? editingId,
+        cron: timeOpt?.cron ?? '0 8 * * *',
+        message: t?.example ?? t?.name ?? editingId,
+      })
+      jobId = result?.id ?? null
+    } catch {}
+    saveEnabled([...enabled, { id: editingId, timeId: pendingTime, target: pendingTarget, jobId }])
     setSuccessMsg(`✅ 「${t?.name}」已开启`)
     setEditingId(null)
     setTimeout(() => setSuccessMsg(null), 2500)
