@@ -41,6 +41,7 @@ export default function Family() {
   const [showAdd, setShowAdd]     = useState(false)
   const [form, setForm]           = useState(null)
   const [saved, setSaved]         = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState(null)
 
   // 加载
   useEffect(() => {
@@ -83,7 +84,11 @@ export default function Family() {
   }
 
   function handleDelete(id) {
-    if (!window.confirm('确定要删除这个成员吗？')) return
+    setDeleteTarget(id)
+  }
+  function confirmDelete() {
+    const id = deleteTarget
+    setDeleteTarget(null)
     saveMembers(members.filter(m => m.id !== id))
     if (activeId === String(id)) {
       setActiveId(null)
@@ -357,6 +362,20 @@ export default function Family() {
           <p>💡 <strong>使用方法：</strong>点击家人的头像卡片上的"切换到我"，龙虾助手就会用对应的设置和问候语为他们服务。老人模式开启后字体和按钮会更大。</p>
         </div>
       )}
+      {deleteTarget && (
+        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.65)',zIndex:300,display:'flex',alignItems:'center',justifyContent:'center',padding:'0 24px'}}>
+          <div style={{background:'#18181b',border:'1px solid rgba(255,255,255,0.1)',borderRadius:16,padding:'24px 20px',width:'100%',maxWidth:320,textAlign:'center'}}>
+            <div style={{fontSize:'2rem',marginBottom:12}}>👤</div>
+            <div style={{fontWeight:600,color:'#fafafa',marginBottom:8}}>删除成员</div>
+            <div style={{fontSize:'0.82rem',color:'#71717a',marginBottom:20}}>删除后该成员的所有记录将一并删除</div>
+            <div style={{display:'flex',gap:10}}>
+              <button onClick={() => setDeleteTarget(null)} style={{flex:1,padding:'10px 0',borderRadius:8,border:'1px solid rgba(255,255,255,0.1)',background:'transparent',color:'#a1a1aa',cursor:'pointer',fontSize:'0.875rem'}}>取消</button>
+              <button onClick={confirmDelete} style={{flex:1,padding:'10px 0',borderRadius:8,border:'none',background:'#ef4444',color:'#fff',cursor:'pointer',fontSize:'0.875rem',fontWeight:600}}>确认删除</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
+

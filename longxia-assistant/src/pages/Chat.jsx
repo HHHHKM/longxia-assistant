@@ -145,6 +145,7 @@ function Chat() {
   const [messages, setMessages] = useState([WELCOME])
   const [input, setInput]       = useState('')
   const [sending, setSending]   = useState(false)
+  const [confirmClear, setConfirmClear] = useState(false)
   const [saved, setSaved]       = useState([])
   const [showSaved, setShowSaved] = useState(false)
   const [recording, setRecording] = useState(false)  // 语音录音中
@@ -302,9 +303,11 @@ function Chat() {
   }
 
   // 清空对话
-  function handleClear() {
-    if (!window.confirm('确定要清空所有对话记录吗？')) return
+  function handleClear() { setConfirmClear(true) }
+  function doClear() {
     setMessages([WELCOME])
+    setConfirmClear(false)
+    try { localStorage.removeItem(getMemberChatKey()) } catch {}
   }
 
   return (
@@ -428,6 +431,19 @@ function SavedDrawer({ saved, onClose, onDelete, onReuse }) {
           </div>
         )}
       </div>
+    {confirmClear && (
+        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.65)',zIndex:300,display:'flex',alignItems:'center',justifyContent:'center',padding:'0 24px'}}>
+          <div style={{background:'#18181b',border:'1px solid rgba(255,255,255,0.1)',borderRadius:16,padding:'24px 20px',width:'100%',maxWidth:320,textAlign:'center'}}>
+            <div style={{fontSize:'2rem',marginBottom:12}}>🗑️</div>
+            <div style={{fontWeight:600,color:'#fafafa',marginBottom:8}}>清空对话记录</div>
+            <div style={{fontSize:'0.82rem',color:'#71717a',marginBottom:20}}>所有聊天记录将被删除，无法恢复</div>
+            <div style={{display:'flex',gap:10}}>
+              <button onClick={()=>setConfirmClear(false)} style={{flex:1,padding:'10px 0',borderRadius:8,border:'1px solid rgba(255,255,255,0.1)',background:'transparent',color:'#a1a1aa',cursor:'pointer'}}>取消</button>
+              <button onClick={doClear} style={{flex:1,padding:'10px 0',borderRadius:8,border:'none',background:'#ef4444',color:'#fff',cursor:'pointer',fontWeight:600}}>确认清空</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
