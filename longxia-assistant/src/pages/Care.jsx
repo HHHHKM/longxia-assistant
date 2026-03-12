@@ -125,7 +125,7 @@ export default function Care() {
   const [successMsg, setSuccessMsg] = useState(null)
 
   useEffect(() => {
-    try { setEnabled(JSON.parse(localStorage.getItem(getMemberCareKey()) || '[]')) } catch {}
+    try { setEnabled(JSON.parse(localStorage.getItem(getMemberCareKey()) || '[]')) } catch(e) { console.warn('加载关怀数据失败', e) }
   }, [])
 
   function saveEnabled(list) {

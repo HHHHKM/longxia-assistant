@@ -51,7 +51,7 @@ function Home() {
       if (window.electronAPI?.restartService) {
         await window.electronAPI.restartService()
       } else {
-        await fetch('http://localhost:3001/api/restart', { method: 'POST' })
+        await fetch('http://localhost:18789/api/v1/restart', { method: 'POST' })
       }
       setActionMsg({ type: 'success', text: '✅ 重启中，约 5 秒后生效…' })
       setTimeout(fetchStatus, 5000)

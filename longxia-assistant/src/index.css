@@ -3578,3 +3578,70 @@ body.simple-mode .family-member-name {
 .home-page::before, .home-page::after,
 .chat-page::before, .hub-page::before { display: none !important; }
 
+
+/* ══ Navbar 底部 tab bar 最终版 ══ */
+.navbar {
+  position: fixed !important;
+  bottom: 0 !important; top: auto !important;
+  left: 0 !important; right: 0 !important;
+  height: 56px !important;
+  background: rgba(10,10,11,0.95) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border-top: 1px solid rgba(255,255,255,0.07) !important;
+  border-bottom: none !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-around !important;
+  padding: 0 2px env(safe-area-inset-bottom, 0) !important;
+  z-index: 1000 !important;
+}
+
+/* 隐藏旧的侧边导航相关 */
+.navbar-brand, .navbar-links, .navbar-title,
+.navbar-tagline, .theme-toggle-btn,
+.bottom-nav, .bottom-nav-inner, .bottom-nav-item,
+.navbar-divider { display: none !important; }
+
+.nav-item {
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 2px !important;
+  padding: 6px 2px !important;
+  border-radius: 0 !important;
+  cursor: pointer !important;
+  border: none !important;
+  background: transparent !important;
+  color: #52525b !important;
+  text-decoration: none !important;
+  transition: color 0.15s !important;
+  position: relative !important;
+}
+.nav-icon { font-size: 1.25rem !important; line-height: 1 !important; }
+.nav-label {
+  font-size: 0.58rem !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.01em !important;
+}
+.nav-item:hover { color: #a1a1aa !important; }
+.nav-item.active {
+  color: #E84545 !important;
+}
+.nav-item.active::before {
+  content: '' !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 20px !important;
+  height: 2px !important;
+  background: #E84545 !important;
+  border-radius: 0 0 2px 2px !important;
+}
+
+/* main-content 底部 padding 适配底部导航高度 */
+.main-content { padding-bottom: 76px !important; }
+.main-content--chat { padding-bottom: 0 !important; }

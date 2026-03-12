@@ -30,6 +30,9 @@ function Config() {
   const [apiAvailable, setApiAvailable] = useState(false)
   const [feedback, setFeedback]   = useState(null) // 保存结果反馈
 
+  // 检测是否在 Electron 桌面环境
+  const isDesktop = typeof window !== 'undefined' && !!window.electronAPI
+
   // 加载现有配置
   useEffect(() => {
     async function load() {
@@ -43,7 +46,7 @@ function Config() {
         })
         setApiAvailable(true)
       } catch {
-        // 服务未启动，显示空表单
+        // 非桌面端或服务未启动
         setApiAvailable(false)
       } finally {
         setLoading(false)
@@ -80,6 +83,28 @@ function Config() {
   }
 
   const models = PROVIDERS[form.provider]?.models ?? []
+
+  // 非桌面端提示
+  if (!isDesktop) return (
+    <div className="config-page page-padding">
+      <h1 className="page-title">设置</h1>
+      <div style={{
+        marginTop: 32, padding: '24px 20px',
+        background: 'rgba(245,158,11,0.07)',
+        border: '1px solid rgba(245,158,11,0.2)',
+        borderRadius: 12, textAlign: 'center',
+      }}>
+        <div style={{ fontSize: '2.5rem', marginBottom: 12 }}>💻</div>
+        <div style={{ fontSize: '1rem', fontWeight: 600, color: '#fafafa', marginBottom: 8 }}>
+          请在桌面应用中使用
+        </div>
+        <div style={{ fontSize: '0.82rem', color: '#71717a', lineHeight: 1.7 }}>
+          设置功能需要读写本地配置文件<br/>
+          请下载并安装龙虾助手桌面版后使用
+        </div>
+      </div>
+    </div>
+  )
 
   return (
     <div className="config-page">

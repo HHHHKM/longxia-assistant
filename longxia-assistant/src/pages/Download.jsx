@@ -167,6 +167,7 @@ function InstructionSection({ platform }) {
 
 // ── 主页面 ───────────────────────────────────────────────
 export default function Download() {
+  const [macAlert, setMacAlert] = React.useState(false)
   return (
     <div className="dl-page">
 
@@ -218,6 +219,20 @@ export default function Download() {
         ))}
       </div>
 
+      {macAlert && (
+        <div style={{
+          background: 'rgba(245,158,11,0.08)',
+          border: '1px solid rgba(245,158,11,0.2)',
+          borderRadius: 8,
+          padding: '10px 16px',
+          marginBottom: 16,
+          fontSize: '0.82rem',
+          color: '#fcd34d',
+          fontWeight: 500,
+        }}>
+          🍎 Mac 安装包正在准备中，敬请期待！
+        </div>
+      )}
       {/* ── 安装/卸载说明 ── */}
       <InstructionSection />
 

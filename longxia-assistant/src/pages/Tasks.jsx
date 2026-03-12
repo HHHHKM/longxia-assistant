@@ -103,7 +103,7 @@ export default function Tasks() {
     try {
       const saved = JSON.parse(localStorage.getItem(getMemberTaskKey()) || '[]')
       setMyTasks(saved)
-    } catch { setMyTasks([]) }
+    } catch (e) { console.warn('加载任务失败', e); setMyTasks([]) }
     // 尝试从 API 同步 cron 任务（失败时静默降级）
     ;(async () => {
       try {

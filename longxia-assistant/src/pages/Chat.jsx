@@ -1,6 +1,51 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { sendChat } from '../api.js'
 
+// 流式发送（逐字显示）
+async function sendChatStream(message, onChunk, signal) {
+  let url = 'http://localhost:18789'
+  let token = ''
+  if (window.electronAPI?.gatewayUrl) {
+    url = await window.electronAPI.gatewayUrl()
+    token = await window.electronAPI.gatewayToken?.() || ''
+  }
+  const headers = { 'Content-Type': 'application/json' }
+  if (token) headers['Authorization'] = `Bearer ${token}`
+  
+  const res = await fetch(`${url}/api/v1/sessions/default/send`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ message, stream: true }),
+    signal,
+  })
+  if (!res.ok || !res.body) {
+    // 降级非流式
+    const data = await res.json().catch(() => ({}))
+    onChunk(data.reply ?? data.message ?? '（无回复）', true)
+    return
+  }
+  const reader = res.body.getReader()
+  const dec = new TextDecoder()
+  let buf = ''
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+    buf += dec.decode(value, { stream: true })
+    const lines = buf.split('\n')
+    buf = lines.pop()
+    for (const line of lines) {
+      if (!line.startsWith('data:')) continue
+      const d = line.slice(5).trim()
+      if (d === '[DONE]') return
+      try {
+        const j = JSON.parse(d)
+        const chunk = j.choices?.[0]?.delta?.content ?? j.delta ?? j.chunk ?? ''
+        if (chunk) onChunk(chunk, false)
+      } catch {}
+    }
+  }
+}
+
 // 生成唯一 ID（不依赖第三方库）
 let _msgId = 0
 function nextId() { return ++_msgId }
@@ -198,31 +243,52 @@ function Chat() {
 
     setMessages(prev => [...prev, userMsg, thinkingMsg])
 
+    const controller = new AbortController()
     try {
-      const data = await sendChat(text)
-      const reply = data.reply ?? '（收到了空回复）'
-
-      // 用真实回复替换思考占位
-      setMessages(prev => prev.map(m =>
-        m.id === thinkingId
-          ? { ...m, text: reply, thinking: false, time: new Date() }
-          : m
-      ))
-    } catch {
-      setMessages(prev => prev.map(m =>
-        m.id === thinkingId
-          ? {
-              ...m,
-              role: 'error',
-              text: '龙虾暂时休息了 😴\n\n请先启动龙虾助手服务，然后再试一次。',
-              thinking: false,
-              time: new Date(),
-            }
-          : m
-      ))
+      let fullText = ''
+      let started = false
+      await sendChatStream(text, (chunk, isComplete) => {
+        fullText += chunk
+        if (!started) {
+          started = true
+          setMessages(prev => prev.map(m =>
+            m.id === thinkingId
+              ? { ...m, text: fullText, thinking: false, time: new Date() }
+              : m
+          ))
+        } else {
+          setMessages(prev => prev.map(m =>
+            m.id === thinkingId ? { ...m, text: fullText } : m
+          ))
+        }
+      }, controller.signal)
+      // 流式完成，确保最终状态正确
+      if (!started) {
+        // 流式未返回任何内容，降级普通请求
+        const data = await sendChat(text)
+        const reply = data.reply ?? '（收到了空回复）'
+        setMessages(prev => prev.map(m =>
+          m.id === thinkingId ? { ...m, text: reply, thinking: false } : m
+        ))
+      }
+    } catch (err) {
+      if (err.name === 'AbortError') return
+      // 降级到普通请求
+      try {
+        const data = await sendChat(text)
+        const reply = data.reply ?? '（收到了空回复）'
+        setMessages(prev => prev.map(m =>
+          m.id === thinkingId ? { ...m, text: reply, thinking: false } : m
+        ))
+      } catch {
+        setMessages(prev => prev.map(m =>
+          m.id === thinkingId
+            ? { ...m, role: 'error', text: '龙虾暂时休息了 😴\n\n请先启动龙虾助手服务，然后再试一次。', thinking: false }
+            : m
+        ))
+      }
     } finally {
       setSending(false)
-      // 发送后重新聚焦输入框
       setTimeout(() => inputRef.current?.focus(), 100)
     }
   }, [input, sending])
