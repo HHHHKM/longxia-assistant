@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import HelpButton from '../components/HelpButton.jsx'
 import { getConfig, saveConfig } from '../api.js'
 
@@ -22,6 +23,7 @@ const DEFAULT_FORM = {
 // 设置页 — 可视化配置表单
 // 代替直接编辑 JSON，适合不懂代码的用户
 function Config() {
+  const navigate = useNavigate()
   const [form, setForm]           = useState(DEFAULT_FORM)
   const [showKey, setShowKey]     = useState(false) // 专属口令显示/隐藏
   const [showTgToken, setShowTgToken] = useState(false)
@@ -289,6 +291,19 @@ function Config() {
 
         </form>
       )}
+    {/* ── 关于 ── */}
+    <div style={{ textAlign: 'center', marginTop: 40, paddingTop: 20, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+      <button
+        onClick={() => navigate('/about')}
+        style={{
+          background: 'transparent', border: 'none',
+          color: '#3f3f46', fontSize: '0.72rem', cursor: 'pointer',
+          letterSpacing: '0.04em',
+        }}
+      >
+        关于龙虾助手 v1.0.0
+      </button>
+    </div>
     </div>
   )
 }

@@ -13,6 +13,7 @@ import HomeHub from './pages/HomeHub.jsx'
 import Cases from './pages/Cases.jsx'
 import ModelControl from './pages/ModelControl.jsx'
 import Update from './pages/Update.jsx'
+import About from './pages/About.jsx'
 import ElderMode from './pages/ElderMode.jsx'
 import Download from './pages/Download.jsx'
 import Language from './pages/Language.jsx'
@@ -74,6 +75,7 @@ function App() {
           <Route path="/language" element={<Language />} />
           <Route path="/model" element={<ModelControl />} />
           <Route path="/update" element={<Update />} />
+        <Route path="/about" element={<About />} />
           <Route path="/elder" element={<ElderMode />} />
           <Route path="/memory" element={<Memory />} />
         </Routes>
