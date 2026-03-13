@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { sendChat } from '../api.js'
+import { recordTokenUsage } from '../utils/tokenStats.js'
+import { buildMemoryContext, buildConversationContext } from '../utils/memory.js'
 
 // 流式发送（逐字显示）
 async function sendChatStream(message, onChunk, signal) {
@@ -244,11 +246,16 @@ function Chat() {
 
     setMessages(prev => [...prev, userMsg, thinkingMsg])
 
+    // 构建发送给 AI 的完整内容（记忆 + 近期对话 + 当前问题）
+    const memCtx = buildMemoryContext()
+    const convCtx = buildConversationContext(messages, 6)
+    const fullMessage = memCtx + convCtx + text
+
     const controller = new AbortController()
     try {
       let fullText = ''
       let started = false
-      await sendChatStream(text, (chunk, isComplete) => {
+      await sendChatStream(fullMessage, (chunk, isComplete) => {
         fullText += chunk
         if (!started) {
           started = true
@@ -266,21 +273,25 @@ function Chat() {
       // 流式完成，确保最终状态正确
       if (!started) {
         // 流式未返回任何内容，降级普通请求
-        const data = await sendChat(text)
+        const data = await sendChat(fullMessage)
         const reply = data.reply ?? '（收到了空回复）'
         setMessages(prev => prev.map(m =>
           m.id === thinkingId ? { ...m, text: reply, thinking: false } : m
         ))
+        recordTokenUsage(text, reply, 'default')
+      } else {
+        recordTokenUsage(text, fullText, 'default')
       }
     } catch (err) {
       if (err.name === 'AbortError') return
       // 降级到普通请求
       try {
-        const data = await sendChat(text)
+        const data = await sendChat(fullMessage)
         const reply = data.reply ?? '（收到了空回复）'
         setMessages(prev => prev.map(m =>
           m.id === thinkingId ? { ...m, text: reply, thinking: false } : m
         ))
+        recordTokenUsage(text, reply, 'default')
       } catch {
         setMessages(prev => prev.map(m =>
           m.id === thinkingId

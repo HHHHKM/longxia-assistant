@@ -6,6 +6,7 @@ const CORE_ACTIONS = [
   { emoji: '⏰', title: '今天提醒', desc: '查看和设置提醒、日程、周期任务', to: '/tasks' },
   { emoji: '👨‍👩‍👧', title: '家庭模式', desc: '帮父母配置，让家人直接使用', to: '/family' },
   { emoji: '❤️', title: '主动关怀', desc: '吃药、天气、问候、喝水提醒', to: '/care' },
+  { emoji: '🧠', title: '我的记忆', desc: '告诉助手关于你的信息，让它更了解你', to: '/memory' },
 ]
 
 const CASES = [

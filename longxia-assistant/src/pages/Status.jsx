@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getStatus } from '../api.js'
+import { getTodayStats, getMonthStats } from '../utils/tokenStats.js'
 
 const MOCK_STATUS = {
   running: false,
@@ -24,6 +25,7 @@ function Home() {
   const [loading, setLoading]           = useState(true)
   const [apiAvailable, setApiAvailable] = useState(false)
   const [actionMsg, setActionMsg]       = useState(null)
+  const [tokenStats, setTokenStats]     = useState({ today: getTodayStats(), month: getMonthStats() })
 
   const fetchStatus = useCallback(async () => {
     setLoading(true)
@@ -142,6 +144,25 @@ function Home() {
           </div>
         </div>
       )}
+
+      {/* ── Token 用量统计 ── */}
+      <div className="section" style={{ marginTop: 24, padding: '0 16px' }}>
+        <h2 className="section-title" style={{ fontSize: '0.9rem', fontWeight: 700, color: '#a1a1aa', marginBottom: 12 }}>📊 Token 用量统计</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 10 }}>
+          {[
+            { label: '今日消息', value: tokenStats.today.messages + ' 条', sub: `≈${tokenStats.today.tokens.toLocaleString()} tokens` },
+            { label: '今日费用', value: `¥${tokenStats.today.cost}`, sub: '估算，仅供参考' },
+            { label: '本月消息', value: tokenStats.month.messages + ' 条', sub: `≈${tokenStats.month.tokens.toLocaleString()} tokens` },
+            { label: '本月费用', value: `¥${tokenStats.month.cost}`, sub: '估算，仅供参考' },
+          ].map(item => (
+            <div key={item.label} className="home-stat-card">
+              <div className="home-stat-value" style={{ fontSize: '1.1rem' }}>{item.value}</div>
+              <div className="home-stat-label">{item.label}</div>
+              <div style={{ fontSize: '0.6rem', color: '#3f3f46', marginTop: 2 }}>{item.sub}</div>
+            </div>
+          ))}
+        </div>
+      </div>
 
       {/* ── 未运行时的引导 ── */}
       {!isRunning && !loading && (

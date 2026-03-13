@@ -16,6 +16,7 @@ import Update from './pages/Update.jsx'
 import ElderMode from './pages/ElderMode.jsx'
 import Download from './pages/Download.jsx'
 import Language from './pages/Language.jsx'
+import Memory from './pages/Memory.jsx'
 
 function App() {
   const location = useLocation()
@@ -74,6 +75,7 @@ function App() {
           <Route path="/model" element={<ModelControl />} />
           <Route path="/update" element={<Update />} />
           <Route path="/elder" element={<ElderMode />} />
+          <Route path="/memory" element={<Memory />} />
         </Routes>
       </main>
     </div>
