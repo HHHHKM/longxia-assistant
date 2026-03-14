@@ -400,6 +400,45 @@ ipcMain.handle('get-gateway-token', () => {
   }
 })
 
+// ── Permissions 页面：写入完整配置 ──
+ipcMain.handle('save-full-config', async (event, newConfig) => {
+  try {
+    const configPath = getConfigPath()
+    // 深度合并：保留现有字段，覆盖传入字段
+    const existing = readConfig() || {}
+    function deepMerge(base, override) {
+      const result = { ...base }
+      for (const key of Object.keys(override)) {
+        if (override[key] && typeof override[key] === 'object' && !Array.isArray(override[key])) {
+          result[key] = deepMerge(base[key] || {}, override[key])
+        } else {
+          result[key] = override[key]
+        }
+      }
+      return result
+    }
+    const merged = deepMerge(existing, newConfig)
+    fs.writeFileSync(configPath, JSON.stringify(merged, null, 2), 'utf8')
+    return { ok: true }
+  } catch (e) {
+    return { ok: false, error: e.message }
+  }
+})
+
+// ── DevMode 终端：执行系统命令 ──
+ipcMain.handle('run-command', async (event, cmd) => {
+  const { exec } = require('child_process')
+  return new Promise((resolve) => {
+    exec(cmd, { timeout: 30000, maxBuffer: 1024 * 512 }, (err, stdout, stderr) => {
+      resolve({
+        exitCode: err ? (err.code || 1) : 0,
+        stdout: stdout || '',
+        stderr: stderr || '',
+      })
+    })
+  })
+})
+
 /**
  * 安装飞书插件：openclaw plugins install @openclaw/feishu
  */

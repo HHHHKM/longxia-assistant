@@ -87,4 +87,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   /** Gateway 鉴权 Token（主进程从配置读取后注入） */
   gatewayToken: () => ipcRenderer.invoke('get-gateway-token'),
+
+  // ── Permissions 页面兼容别名 ──────────────────────
+  /** 读取完整配置（Permissions 页面用） */
+  readConfig: () => ipcRenderer.invoke('get-config'),
+
+  /** 保存完整配置 JSON（Permissions 页面用） */
+  saveFullConfig: (config) => ipcRenderer.invoke('save-full-config', config),
+
+  // ── 开发者终端 ────────────────────────────────────
+  /** 执行系统命令（DevMode 终端用） */
+  runCommand: (cmd) => ipcRenderer.invoke('run-command', cmd),
 })
