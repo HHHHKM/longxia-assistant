@@ -19,6 +19,7 @@ import Download from './pages/Download.jsx'
 import Language from './pages/Language.jsx'
 import Memory from './pages/Memory.jsx'
 import DevMode from './pages/DevMode.jsx'
+import Permissions from './pages/Permissions.jsx'
 
 function App() {
   const location = useLocation()
@@ -80,6 +81,7 @@ function App() {
           <Route path="/elder" element={<ElderMode />} />
           <Route path="/memory" element={<Memory />} />
           <Route path="/devmode" element={<DevMode />} />
+          <Route path="/permissions" element={<Permissions />} />
         </Routes>
       </main>
     </div>

@@ -406,6 +406,14 @@ function Config() {
             </div>
           )}
 
+          {/* ── OpenClaw 权限与高级设置跳转 ── */}
+          <div style={{ marginTop: 16, textAlign: 'center' }}>
+            <button type="button" onClick={() => navigate('/permissions')}
+              style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#71717a', fontSize: '0.78rem', padding: '8px 16px', cursor: 'pointer' }}>
+              🔐 OpenClaw 权限与高级设置 →
+            </button>
+          </div>
+
           {/* ── 高级设置折叠区 ── */}
           <div style={{ marginTop: 24, borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 20 }}>
             <button
