@@ -32,6 +32,25 @@ function Config() {
   const [apiAvailable, setApiAvailable] = useState(false)
   const [feedback, setFeedback]   = useState(null)
   // 一键检测状态
+  const [devTapCount, setDevTapCount] = useState(0)
+  const [devModeEnabled, setDevModeEnabled] = useState(
+    () => localStorage.getItem('longxia_dev_enabled') === 'true'
+  )
+  // 权限/高级设置
+  const [advSettings, setAdvSettings] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('longxia_adv_settings') || '{}') } catch { return {} }
+  })
+  const [showAdvanced, setShowAdvanced] = useState(false)
+
+  function saveAdvSettings(patch) {
+    const next = { ...advSettings, ...patch }
+    setAdvSettings(next)
+    localStorage.setItem('longxia_adv_settings', JSON.stringify(next))
+  }
+  function toggleDevMode(v) {
+    setDevModeEnabled(v)
+    localStorage.setItem('longxia_dev_enabled', String(v))
+  }
   const [detecting, setDetecting]     = useState(false)
   const [detectResult, setDetectResult] = useState(null) // null | 'ok' | 'fail'
   const [detectInfo, setDetectInfo]   = useState(null)   // { version, model }
@@ -387,20 +406,223 @@ function Config() {
             </div>
           )}
 
+          {/* ── 高级设置折叠区 ── */}
+          <div style={{ marginTop: 24, borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 20 }}>
+            <button
+              type="button"
+              onClick={() => setShowAdvanced(v => !v)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 8, width: '100%',
+                background: 'transparent', border: 'none', cursor: 'pointer',
+                color: '#52525b', fontSize: '0.78rem', padding: '4px 0',
+              }}
+            >
+              <span>{showAdvanced ? '▼' : '▶'}</span>
+              <span>高级设置 / 权限管理</span>
+            </button>
+
+            {showAdvanced && (
+              <div style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 14 }}>
+
+                {/* AI 行为 */}
+                <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#3f3f46', letterSpacing: '0.08em', textTransform: 'uppercase' }}>🤖 AI 行为</div>
+                {[
+                  { key: 'systemPrompt', label: 'System Prompt（AI人设）', placeholder: '例如：你是专业产品经理助手，回答要简洁', type: 'textarea' },
+                  { key: 'contextLimit', label: '对话上下文条数（默认6）', placeholder: '数字，例如：10' },
+                  { key: 'maxTokens',    label: '单次最大 Token 数', placeholder: '数字，例如：2000' },
+                  { key: 'temperature', label: '温度 Temperature（0~2，默认1）', placeholder: '例如：0.7' },
+                ].map(item => (
+                  <div key={item.key}>
+                    <label style={{ fontSize: '0.72rem', color: '#71717a', display: 'block', marginBottom: 4 }}>{item.label}</label>
+                    {item.type === 'textarea'
+                      ? <textarea
+                          style={{ width: '100%', background: '#18181b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#fafafa', fontSize: '0.8rem', padding: '7px 10px', outline: 'none', resize: 'vertical', height: 68, boxSizing: 'border-box', fontFamily: 'inherit' }}
+                          value={advSettings[item.key] || ''}
+                          onChange={e => saveAdvSettings({ [item.key]: e.target.value })}
+                          placeholder={item.placeholder}
+                        />
+                      : <input
+                          style={{ width: '100%', background: '#18181b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#fafafa', fontSize: '0.8rem', padding: '7px 10px', outline: 'none', boxSizing: 'border-box' }}
+                          value={advSettings[item.key] || ''}
+                          onChange={e => saveAdvSettings({ [item.key]: e.target.value })}
+                          placeholder={item.placeholder}
+                        />
+                    }
+                  </div>
+                ))}
+
+                {/* 网络 */}
+                <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#3f3f46', letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: 4 }}>🌐 网络</div>
+                {[
+                  { key: 'gatewayUrl',  label: '自定义 Gateway 地址', placeholder: 'http://localhost:18789' },
+                  { key: 'proxyUrl',    label: 'HTTP 代理地址（可选）', placeholder: 'http://127.0.0.1:7890' },
+                  { key: 'reqTimeout',  label: '请求超时秒数（默认30）', placeholder: '例如：60' },
+                ].map(item => (
+                  <div key={item.key}>
+                    <label style={{ fontSize: '0.72rem', color: '#71717a', display: 'block', marginBottom: 4 }}>{item.label}</label>
+                    <input
+                      style={{ width: '100%', background: '#18181b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#fafafa', fontSize: '0.8rem', padding: '7px 10px', outline: 'none', boxSizing: 'border-box' }}
+                      value={advSettings[item.key] || ''}
+                      onChange={e => saveAdvSettings({ [item.key]: e.target.value })}
+                      placeholder={item.placeholder}
+                    />
+                  </div>
+                ))}
+
+                {/* 渠道权限 */}
+                <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#3f3f46', letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: 4 }}>📱 渠道权限</div>
+                {[
+                  { key: 'telegramEnabled', label: 'Telegram 渠道', desc: '允许通过 Telegram Bot 收发消息' },
+                  { key: 'webhookEnabled',  label: 'Webhook 推送', desc: '任务执行结果推送到指定 URL' },
+                  { key: 'cronEnabled',     label: '定时任务', desc: '允许创建和执行定时任务' },
+                ].map(item => (
+                  <div key={item.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div>
+                      <div style={{ fontSize: '0.82rem', color: '#fafafa' }}>{item.label}</div>
+                      <div style={{ fontSize: '0.68rem', color: '#52525b' }}>{item.desc}</div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => saveAdvSettings({ [item.key]: !(advSettings[item.key] !== false) })}
+                      style={{
+                        flexShrink: 0, marginLeft: 12, padding: '5px 12px',
+                        borderRadius: 6, border: 'none', fontWeight: 600,
+                        fontSize: '0.75rem', cursor: 'pointer',
+                        background: advSettings[item.key] !== false ? '#E84545' : 'rgba(255,255,255,0.06)',
+                        color: advSettings[item.key] !== false ? '#fff' : '#71717a',
+                      }}
+                    >{advSettings[item.key] !== false ? '开启' : '关闭'}</button>
+                  </div>
+                ))}
+
+                {/* 通知 */}
+                <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#3f3f46', letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: 4 }}>🔔 通知</div>
+                {[
+                  { key: 'notifyOnTask',  label: '任务执行通知', desc: '定时任务完成时通知' },
+                  { key: 'notifyOnError', label: '错误提醒', desc: '服务异常时通知' },
+                ].map(item => (
+                  <div key={item.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div>
+                      <div style={{ fontSize: '0.82rem', color: '#fafafa' }}>{item.label}</div>
+                      <div style={{ fontSize: '0.68rem', color: '#52525b' }}>{item.desc}</div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => saveAdvSettings({ [item.key]: !advSettings[item.key] })}
+                      style={{
+                        flexShrink: 0, marginLeft: 12, padding: '5px 12px',
+                        borderRadius: 6, border: 'none', fontWeight: 600,
+                        fontSize: '0.75rem', cursor: 'pointer',
+                        background: advSettings[item.key] ? '#E84545' : 'rgba(255,255,255,0.06)',
+                        color: advSettings[item.key] ? '#fff' : '#71717a',
+                      }}
+                    >{advSettings[item.key] ? '开启' : '关闭'}</button>
+                  </div>
+                ))}
+
+                {/* 安全 */}
+                <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#3f3f46', letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: 4 }}>🔒 安全</div>
+                {[
+                  { key: 'accessPassword', label: '访问密码（留空不启用）', placeholder: '设置后打开应用需要输入密码' },
+                  { key: 'authToken',      label: 'API 鉴权 Token（留空不启用）', placeholder: '用于 API 接口鉴权' },
+                ].map(item => (
+                  <div key={item.key}>
+                    <label style={{ fontSize: '0.72rem', color: '#71717a', display: 'block', marginBottom: 4 }}>{item.label}</label>
+                    <input
+                      type="password"
+                      style={{ width: '100%', background: '#18181b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#fafafa', fontSize: '0.8rem', padding: '7px 10px', outline: 'none', boxSizing: 'border-box' }}
+                      value={advSettings[item.key] || ''}
+                      onChange={e => saveAdvSettings({ [item.key]: e.target.value })}
+                      placeholder={item.placeholder}
+                    />
+                  </div>
+                ))}
+
+                {/* 数据 */}
+                <div style={{ fontSize: '0.65rem', fontWeight: 700, color: '#3f3f46', letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: 4 }}>💾 数据</div>
+                {[
+                  { key: 'chatRetainDays', label: '聊天记录保留天数（0=永久）', placeholder: '例如：30' },
+                ].map(item => (
+                  <div key={item.key}>
+                    <label style={{ fontSize: '0.72rem', color: '#71717a', display: 'block', marginBottom: 4 }}>{item.label}</label>
+                    <input
+                      style={{ width: '100%', background: '#18181b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#fafafa', fontSize: '0.8rem', padding: '7px 10px', outline: 'none', boxSizing: 'border-box' }}
+                      value={advSettings[item.key] || ''}
+                      onChange={e => saveAdvSettings({ [item.key]: e.target.value })}
+                      placeholder={item.placeholder}
+                    />
+                  </div>
+                ))}
+
+                <div style={{ fontSize: '0.65rem', color: '#3f3f46', paddingTop: 4 }}>
+                  ⚠️ 以上设置修改后立即保存到本地，无需点「保存设置」按钮
+                </div>
+              </div>
+            )}
+          </div>
+
         </form>
       )}
-    {/* ── 关于 ── */}
+
+    {/* ── 开发者开关 + 关于 ── */}
     <div style={{ textAlign: 'center', marginTop: 40, paddingTop: 20, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
       <button
         onClick={() => navigate('/about')}
-        style={{
-          background: 'transparent', border: 'none',
-          color: '#3f3f46', fontSize: '0.72rem', cursor: 'pointer',
-          letterSpacing: '0.04em',
-        }}
+        style={{ background: 'transparent', border: 'none', color: '#3f3f46', fontSize: '0.72rem', cursor: 'pointer', letterSpacing: '0.04em' }}
       >
         关于龙虾助手 v1.0.0
       </button>
+
+      {/* 开发者开关 */}
+      <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+        <span style={{ fontSize: '0.72rem', color: devModeEnabled ? '#71717a' : '#3f3f46' }}>开发者模式</span>
+        <button
+          type="button"
+          onClick={() => toggleDevMode(!devModeEnabled)}
+          style={{
+            width: 36, height: 20, borderRadius: 10, border: 'none', cursor: 'pointer', position: 'relative', padding: 0,
+            background: devModeEnabled ? '#E84545' : 'rgba(255,255,255,0.1)', transition: 'background 0.2s',
+          }}
+        >
+          <span style={{
+            position: 'absolute', top: 3, left: devModeEnabled ? 18 : 3,
+            width: 14, height: 14, borderRadius: '50%', background: '#fff',
+            transition: 'left 0.2s', display: 'block',
+          }} />
+        </button>
+      </div>
+
+      {/* 开发者模式入口按钮 */}
+      {devModeEnabled && (
+        <button
+          type="button"
+          onClick={() => navigate('/devmode')}
+          style={{
+            marginTop: 10, padding: '7px 18px', borderRadius: 8,
+            border: '1px solid rgba(232,69,69,0.3)',
+            background: 'rgba(232,69,69,0.08)', color: '#f87171',
+            fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer',
+            letterSpacing: '0.04em',
+          }}
+        >
+          🛠 进入开发者模式 →
+        </button>
+      )}
+
+      {/* 隐藏连点触发（仍然保留） */}
+      <div
+        onClick={() => {
+          setDevTapCount(prev => {
+            const next = prev + 1
+            if (next >= 5) { navigate('/devmode'); return 0 }
+            if (next >= 3) setTimeout(() => setDevTapCount(0), 3000)
+            return next
+          })
+        }}
+        style={{ marginTop: 4, fontSize: '0.55rem', color: devTapCount >= 3 ? '#3f3f46' : 'transparent', cursor: 'default', userSelect: 'none' }}
+      >
+        {devTapCount >= 3 ? `再点 ${5 - devTapCount} 次` : '·'}
+      </div>
     </div>
     </div>
   )
