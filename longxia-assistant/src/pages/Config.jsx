@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import HelpButton from '../components/HelpButton.jsx'
-import { getConfig, saveConfig } from '../api.js'
+import { getConfig, saveConfig, getStatus } from '../api.js'
 
 // ── 服务商与对应可选模型 ──
 const PROVIDERS = {
@@ -25,12 +25,16 @@ const DEFAULT_FORM = {
 function Config() {
   const navigate = useNavigate()
   const [form, setForm]           = useState(DEFAULT_FORM)
-  const [showKey, setShowKey]     = useState(false) // 专属口令显示/隐藏
+  const [showKey, setShowKey]     = useState(false)
   const [showTgToken, setShowTgToken] = useState(false)
   const [saving, setSaving]       = useState(false)
   const [loading, setLoading]     = useState(true)
   const [apiAvailable, setApiAvailable] = useState(false)
-  const [feedback, setFeedback]   = useState(null) // 保存结果反馈
+  const [feedback, setFeedback]   = useState(null)
+  // 一键检测状态
+  const [detecting, setDetecting]     = useState(false)
+  const [detectResult, setDetectResult] = useState(null) // null | 'ok' | 'fail'
+  const [detectInfo, setDetectInfo]   = useState(null)   // { version, model }
 
   // 检测是否在 Electron 桌面环境
   const isDesktop = typeof window !== 'undefined' && !!window.electronAPI
@@ -67,6 +71,36 @@ function Config() {
       }
       return next
     })
+  }
+
+  // 一键检测并导入本机 OpenClaw 配置
+  async function handleDetect() {
+    setDetecting(true)
+    setDetectResult(null)
+    setDetectInfo(null)
+    try {
+      // 1. 检测服务是否在跑
+      const status = await getStatus()
+      // 2. 读取现有配置
+      let cfg = null
+      try { cfg = await getConfig() } catch {}
+      // 3. 填入表单
+      if (cfg) {
+        setForm({
+          provider:      cfg.provider      ?? 'openai',
+          apiKey:        cfg.apiKey        ?? '',
+          model:         cfg.model         ?? 'gpt-4o',
+          telegramToken: cfg.telegramToken ?? '',
+        })
+      }
+      setDetectInfo({ version: status.version ?? '--', model: status.model ?? cfg?.model ?? '--' })
+      setDetectResult('ok')
+      setApiAvailable(true)
+    } catch {
+      setDetectResult('fail')
+    } finally {
+      setDetecting(false)
+    }
   }
 
   // 保存配置
@@ -132,6 +166,70 @@ function Config() {
 
       {!loading && (
         <form onSubmit={handleSave}>
+
+          {/* ── 一键检测并连接 ── */}
+          <div style={{
+            background: '#18181b',
+            border: `1px solid ${detectResult === 'ok' ? 'rgba(34,197,94,0.25)' : detectResult === 'fail' ? 'rgba(239,68,68,0.2)' : 'rgba(255,255,255,0.08)'}`,
+            borderRadius: 12, padding: '16px 18px', marginBottom: 24,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+              <div>
+                <div style={{ fontSize: '0.875rem', fontWeight: 600, color: '#fafafa', marginBottom: 3 }}>
+                  已安装过 OpenClaw？
+                </div>
+                <div style={{ fontSize: '0.75rem', color: '#71717a' }}>
+                  一键检测本机服务，自动导入现有配置
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handleDetect}
+                disabled={detecting}
+                style={{
+                  flexShrink: 0,
+                  padding: '9px 16px', borderRadius: 8, border: 'none',
+                  background: detecting ? 'rgba(232,69,69,0.2)' : '#E84545',
+                  color: detecting ? 'rgba(255,255,255,0.4)' : '#fff',
+                  fontWeight: 600, fontSize: '0.82rem', cursor: detecting ? 'not-allowed' : 'pointer',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {detecting ? '🔍 检测中…' : '🔍 一键检测'}
+              </button>
+            </div>
+
+            {/* 检测结果 */}
+            {detectResult === 'ok' && detectInfo && (
+              <div style={{
+                marginTop: 12, paddingTop: 12,
+                borderTop: '1px solid rgba(255,255,255,0.06)',
+                display: 'flex', alignItems: 'center', gap: 8,
+              }}>
+                <span style={{ fontSize: '1rem' }}>✅</span>
+                <div>
+                  <div style={{ fontSize: '0.8rem', color: '#86efac', fontWeight: 600 }}>
+                    已连接！配置已自动导入
+                  </div>
+                  <div style={{ fontSize: '0.7rem', color: '#52525b', marginTop: 2 }}>
+                    服务版本 {detectInfo.version} · 当前模型 {detectInfo.model}
+                  </div>
+                </div>
+              </div>
+            )}
+            {detectResult === 'fail' && (
+              <div style={{
+                marginTop: 12, paddingTop: 12,
+                borderTop: '1px solid rgba(255,255,255,0.06)',
+                display: 'flex', alignItems: 'center', gap: 8,
+              }}>
+                <span style={{ fontSize: '1rem' }}>❌</span>
+                <div style={{ fontSize: '0.8rem', color: '#fca5a5' }}>
+                  未检测到本机服务，请手动填写下方配置
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* ── AI 服务商 ── */}
           <div className="form-group">
