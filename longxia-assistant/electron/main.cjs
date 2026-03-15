@@ -504,33 +504,44 @@ async function main() {
   showSplash()
 
   try {
-    // 步骤 0: 检查电脑环境（Node.js）
+    // 步骤 0: 检查电脑环境（Node.js）—— 失败不阻塞
     updateSplash('检查电脑环境...', 10, 0)
-    await checkAndInstallNode((msg) => updateSplash(msg, 20, 0))
+    try {
+      await checkAndInstallNode((msg) => updateSplash(msg, 20, 0))
+    } catch (e) {
+      console.warn('[main] Node 检测/安装失败，继续启动:', e.message)
+    }
 
-    // 步骤 1: 安装 AI 引擎（OpenClaw）
-    updateSplash('安装 AI 引擎...', 30, 1)
-    await checkAndInstallOpenClaw((msg) => updateSplash(msg, 45, 1))
+    // 步骤 1: 安装 AI 引擎（OpenClaw）—— 失败不阻塞，进向导
+    updateSplash('检查 AI 引擎...', 30, 1)
+    let openclawReady = false
+    try {
+      await checkAndInstallOpenClaw((msg) => updateSplash(msg, 45, 1))
+      openclawReady = true
+    } catch (e) {
+      console.warn('[main] OpenClaw 安装失败，将进入向导:', e.message)
+    }
 
     // 步骤 2: 检查配置
     updateSplash('初始化工作区...', 55, 2)
     const firstRun = !hasConfig()
 
-    if (!firstRun) {
+    if (!firstRun && openclawReady) {
       // 步骤 3: 启动 AI 服务
-      // 先检查 daemon 是否已在系统层面运行
       updateSplash('启动 AI 服务...', 65, 3)
-
-      const alreadyRunning = await isGatewayRunning()
-      if (alreadyRunning) {
-        console.log('[main] Gateway 已在系统级运行，跳过启动')
-        serviceRunning = true
-      } else {
-        // 初始化 workspace，然后启动
-        await initWorkspace({ onLog: console.log })
-        await startGateway({ onLog: (msg) => updateSplash(msg, 75, 3) })
-        updateSplash('等待 AI 服务就绪...', 80, 4)
-        await waitForService(60)
+      try {
+        const alreadyRunning = await isGatewayRunning()
+        if (alreadyRunning) {
+          console.log('[main] Gateway 已在系统级运行，跳过启动')
+          serviceRunning = true
+        } else {
+          await initWorkspace({ onLog: console.log })
+          await startGateway({ onLog: (msg) => updateSplash(msg, 75, 3) })
+          updateSplash('等待 AI 服务就绪...', 80, 4)
+          await waitForService(30)  // 缩短等待时间为30秒
+        }
+      } catch (e) {
+        console.warn('[main] Gateway 启动失败，将进向导:', e.message)
       }
     }
 
@@ -539,16 +550,24 @@ async function main() {
 
     closeSplash()
 
-    if (firstRun) {
-      showSetupWizard()
-    } else {
+    // 有配置且 openclaw 就绪 → 主界面；否则 → 向导
+    if (!firstRun && openclawReady) {
       showMainPanel()
+    } else {
+      showSetupWizard()
     }
 
     setupTray()
   } catch (err) {
     console.error('[main] 启动失败:', err)
-    showError(err.message || '未知错误')
+    // 即使出错也尝试打开向导，不要只显示错误对话框
+    try {
+      closeSplash()
+      showSetupWizard()
+      setupTray()
+    } catch (e2) {
+      showError(err.message || '未知错误')
+    }
   }
 }
 
