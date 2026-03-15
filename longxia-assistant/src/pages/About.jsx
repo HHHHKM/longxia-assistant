@@ -34,7 +34,7 @@ export default function About() {
           style={{ width: 72, height: 72, borderRadius: 18, objectFit: 'cover', marginBottom: 14 }}
         />
         <div style={{ fontSize: '1.2rem', fontWeight: 700, color: '#fafafa', marginBottom: 4 }}>龙虾助手</div>
-        <div style={{ fontSize: '0.78rem', color: '#52525b' }}>版本 v1.0.0 · 基于 OpenClaw</div>
+        <div style={{ fontSize: '0.78rem', color: '#52525b' }}>版本 v0.1.0 · 基于 OpenClaw</div>
       </div>
 
       {/* 使命 */}

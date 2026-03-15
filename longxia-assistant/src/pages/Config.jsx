@@ -578,7 +578,7 @@ function Config() {
         onClick={() => navigate('/about')}
         style={{ background: 'transparent', border: 'none', color: '#3f3f46', fontSize: '0.72rem', cursor: 'pointer', letterSpacing: '0.04em' }}
       >
-        关于龙虾助手 v1.0.0
+        关于龙虾助手 v0.1.0
       </button>
 
       {/* 开发者开关 */}
