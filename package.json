@@ -50,6 +50,7 @@
       }
     ],
     "win": {
+      "signAndEditExecutable": false,
       "target": [
         {
           "target": "nsis",
@@ -83,8 +84,8 @@
     },
     "nsis": {
       "installerLanguages": [
-        "SimpChinese",
-        "English"
+        "zh_CN",
+        "en_US"
       ],
       "language": "2052",
       "oneClick": false,
