@@ -134,7 +134,11 @@ function createMainWindow(url) {
 }
 
 function showMainPanel() {
-  const url = `${SERVICE_URL}`
+  // 始终加载本地 dist/index.html，通过 IPC 与 Gateway 通信
+  // 不直接加载 http://localhost:18789（Windows 无 OpenClaw 时会白屏）
+  const url = process.env.VITE_DEV_SERVER_URL
+    ? process.env.VITE_DEV_SERVER_URL
+    : `file://${path.join(__dirname, '..', 'dist', 'index.html')}`
   if (mainWindow && !mainWindow.isDestroyed()) {
     mainWindow.loadURL(url)
     mainWindow.show()
