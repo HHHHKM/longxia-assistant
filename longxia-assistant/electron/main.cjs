@@ -360,8 +360,10 @@ ipcMain.handle('open-external', async (event, url) => {
  * 5. 展示主面板
  */
 ipcMain.handle('setup-complete', async () => {
+  console.log('[setup-complete] 开始...')
   try {
     // 初始化 workspace
+    console.log('[setup-complete] 初始化 workspace...')
     await initWorkspace({ onLog: console.log })
   } catch (e) {
     console.warn('[setup-complete] initWorkspace 失败，继续:', e.message)
@@ -379,13 +381,20 @@ ipcMain.handle('setup-complete', async () => {
   }
 
   // 启动 Gateway（如未运行）
+  console.log('[setup-complete] 检查 Gateway 状态...')
   const running = await checkServiceHealth()
   if (!running) {
+    console.log('[setup-complete] Gateway 未运行，启动中...')
     await startGateway({ onLog: console.log })
+    console.log('[setup-complete] 等待 Gateway 就绪...')
     await waitForService(30)
+  } else {
+    console.log('[setup-complete] Gateway 已运行')
   }
 
+  console.log('[setup-complete] 打开主界面...')
   showMainPanel()
+  console.log('[setup-complete] 完成')
   return { ok: true }
 })
 

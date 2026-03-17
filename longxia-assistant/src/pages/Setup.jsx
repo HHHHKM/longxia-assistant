@@ -388,10 +388,20 @@ export default function Setup() {
 
   // ── 完成向导 ──────────────────────────────────────
   async function handleFinish() {
-    if (window.electronAPI) {
-      await window.electronAPI.setupComplete()
-    } else {
-      navigate('/')
+    setLoading(true)
+    try {
+      if (window.electronAPI) {
+        console.log('[Setup] 调用 setupComplete...')
+        await window.electronAPI.setupComplete()
+        console.log('[Setup] setupComplete 完成')
+      } else {
+        navigate('/')
+      }
+    } catch (e) {
+      console.error('[Setup] handleFinish 失败:', e)
+      alert('启动失败：' + e.message)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -792,8 +802,12 @@ export default function Setup() {
               <TipItem green>🦞 龙虾助手正在启动，请稍等片刻…</TipItem>
             </div>
 
-            <button style={{ ...styles.bigBtn, background: '#4CAF50', fontSize: 22, padding: '18px 56px' }} onClick={handleFinish}>
-              🚀 开始使用！
+            <button 
+              style={{ ...styles.bigBtn, background: '#4CAF50', fontSize: 22, padding: '18px 56px' }} 
+              onClick={handleFinish}
+              disabled={loading}
+            >
+              {loading ? '⏳ 启动中...' : '🚀 开始使用！'}
             </button>
           </div>
         )}
