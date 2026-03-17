@@ -360,26 +360,50 @@ const PROVIDER_MAP = {
   deepseek: {
     providerKey: 'deepseek',
     model: 'deepseek/deepseek-chat',
+    modelId: 'deepseek-chat',
+    modelName: 'DeepSeek Chat',
+    baseUrl: 'https://api.deepseek.com/v1',
+    api: 'openai-completions',
   },
   siliconflow: {
     providerKey: 'siliconflow',
     model: 'siliconflow/Qwen/Qwen2.5-7B-Instruct',
+    modelId: 'Qwen/Qwen2.5-7B-Instruct',
+    modelName: 'Qwen 2.5 7B Instruct',
+    baseUrl: 'https://api.siliconflow.cn/v1',
+    api: 'openai-completions',
   },
   qwen: {
     providerKey: 'alibaba',
-    model: 'qwen/qwen-plus',
+    model: 'alibaba/qwen-plus',
+    modelId: 'qwen-plus',
+    modelName: 'Qwen Plus',
+    baseUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
+    api: 'openai-completions',
   },
   openai: {
     providerKey: 'openai',
     model: 'openai/gpt-4o-mini',
+    modelId: 'gpt-4o-mini',
+    modelName: 'GPT-4o mini',
+    baseUrl: 'https://api.openai.com/v1',
+    api: 'openai-completions',
   },
   claude: {
     providerKey: 'anthropic',
     model: 'anthropic/claude-3-5-haiku',
+    modelId: 'claude-3-5-haiku',
+    modelName: 'Claude 3.5 Haiku',
+    baseUrl: 'https://api.anthropic.com',
+    api: 'anthropic-messages',
   },
   openrouter: {
     providerKey: 'openrouter',
     model: 'openrouter/auto',
+    modelId: 'auto',
+    modelName: 'OpenRouter Auto',
+    baseUrl: 'https://openrouter.ai/api/v1',
+    api: 'openai-completions',
   },
 }
 
@@ -404,9 +428,23 @@ function loadExistingConfig() {
 function buildBaseConfig(provider, apiKey) {
   const pm = PROVIDER_MAP[provider] || PROVIDER_MAP.deepseek
   return {
+    gateway: {
+      mode: 'local',
+    },
     models: {
+      mode: 'merge',
       providers: {
-        [pm.providerKey]: { apiKey },
+        [pm.providerKey]: {
+          baseUrl: pm.baseUrl,
+          apiKey,
+          api: pm.api,
+          models: [
+            {
+              id: pm.modelId,
+              name: pm.modelName,
+            },
+          ],
+        },
       },
     },
     agents: {
@@ -417,6 +455,41 @@ function buildBaseConfig(provider, apiKey) {
     },
     session: {
       dmScope: 'per-channel-peer',
+    },
+  }
+}
+
+function mergeBaseConfig(existingConfig, base) {
+  return {
+    ...existingConfig,
+    ...base,
+    gateway: {
+      ...(existingConfig.gateway || {}),
+      ...(base.gateway || {}),
+      auth: {
+        ...(existingConfig.gateway?.auth || {}),
+        ...(base.gateway?.auth || {}),
+      },
+    },
+    models: {
+      ...(existingConfig.models || {}),
+      ...(base.models || {}),
+      providers: {
+        ...(existingConfig.models?.providers || {}),
+        ...(base.models?.providers || {}),
+      },
+    },
+    agents: {
+      ...(existingConfig.agents || {}),
+      ...(base.agents || {}),
+      defaults: {
+        ...(existingConfig.agents?.defaults || {}),
+        ...(base.agents?.defaults || {}),
+      },
+    },
+    session: {
+      ...(existingConfig.session || {}),
+      ...(base.session || {}),
     },
   }
 }
@@ -442,7 +515,7 @@ function saveConfig(provider, apiKey, telegramBotToken) {
   const existingConfig = loadExistingConfig()
   const base = buildBaseConfig(provider, apiKey)
 
-  const config = { ...existingConfig, ...base }
+  const config = mergeBaseConfig(existingConfig, base)
 
   if (telegramBotToken && telegramBotToken.trim()) {
     config.channels = {
@@ -488,7 +561,7 @@ function saveConfigFull({ provider, apiKey, telegramBotToken, feishuAppId, feish
   const existingConfig = loadExistingConfig()
   const base = buildBaseConfig(provider, apiKey)
 
-  const config = { ...existingConfig, ...base }
+  const config = mergeBaseConfig(existingConfig, base)
   const channels = { ...(existingConfig.channels || {}) }
 
   // Telegram 渠道
@@ -533,4 +606,5 @@ module.exports = {
   runCommand,
   refreshWindowsPath,
   NODE_VERSION,
+  buildBaseConfig,
 }

@@ -137,7 +137,7 @@ async function startGateway(opts = {}) {
   // 回退：foreground 模式 (spawn)
   log('[ocManager] Daemon 模式失败，回退到 foreground 模式...')
   try {
-    const fgProcess = spawn(cmd, ['gateway', 'start', '--foreground'], {
+    const fgProcess = spawn(cmd, ['gateway', 'run', '--port', String(GATEWAY_PORT)], {
       shell: isWindows,
       env: { ...process.env },
       detached: false,
