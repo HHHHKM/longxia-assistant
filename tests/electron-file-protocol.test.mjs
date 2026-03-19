@@ -37,3 +37,11 @@ test('Vite build uses relative asset base for file:// packaged app', async () =>
 
   assert.match(viteConfig, /base:\s*['"]\.\/['"]/)
 })
+
+test('Main panel loads local renderer route instead of OpenClaw control UI URL', async () => {
+  const mainProcess = await readProjectFile('electron/main.cjs')
+
+  assert.match(mainProcess, /function showMainPanel\(\)/)
+  assert.match(mainProcess, /const url = getRendererUrl\('\/'\)/)
+  assert.doesNotMatch(mainProcess, /const url = `\$\{SERVICE_URL\}`/)
+})

@@ -133,8 +133,17 @@ function createMainWindow(url) {
   return mainWindow
 }
 
+function getRendererUrl(hashPath = '/') {
+  if (process.env.NODE_ENV === 'development' || process.env.VITE_DEV_SERVER_URL) {
+    const base = process.env.VITE_DEV_SERVER_URL || 'http://localhost:5173'
+    return `${base}/#${hashPath}`
+  }
+  return `file://${path.join(__dirname, '..', 'dist', 'index.html')}#${hashPath}`
+}
+
 function showMainPanel() {
-  const url = `${SERVICE_URL}`
+  // 主面板始终使用龙虾助手本地页面，不直接暴露 OpenClaw 控制台界面
+  const url = getRendererUrl('/')
   if (mainWindow && !mainWindow.isDestroyed()) {
     mainWindow.loadURL(url)
     mainWindow.show()
@@ -147,13 +156,7 @@ function showMainPanel() {
 function showSetupWizard() {
   // 向导页：在本地 React 应用的 /setup 路由
   // 开发时：Vite 热更新服务器；打包后：dist/index.html#/setup
-  let url
-  if (process.env.NODE_ENV === 'development' || process.env.VITE_DEV_SERVER_URL) {
-    const base = process.env.VITE_DEV_SERVER_URL || 'http://localhost:5173'
-    url = `${base}/#/setup`
-  } else {
-    url = `file://${path.join(__dirname, '..', 'dist', 'index.html')}#/setup`
-  }
+  const url = getRendererUrl('/setup')
 
   if (mainWindow && !mainWindow.isDestroyed()) {
     mainWindow.loadURL(url)
