@@ -49,14 +49,19 @@ function Home() {
     setActionMsg(null)
     try {
       if (window.electronAPI?.restartService) {
-        await window.electronAPI.restartService()
+        const result = await window.electronAPI.restartService()
+        if (!result?.ok) {
+          throw new Error(result?.error || '重启失败')
+        }
       } else {
-        await fetch('http://localhost:3001/api/restart', { method: 'POST' })
+        const res = await fetch('http://localhost:3001/api/restart', { method: 'POST' })
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
       }
       setActionMsg({ type: 'success', text: '✅ 重启中，约 5 秒后生效…' })
       setTimeout(fetchStatus, 5000)
-    } catch {
-      setActionMsg({ type: 'error', text: '❌ 无法连接服务，请手动重启龙虾助手' })
+    } catch (e) {
+      const msg = e?.message ? `❌ ${e.message}` : '❌ 无法连接服务，请手动重启龙虾助手'
+      setActionMsg({ type: 'error', text: msg })
     }
     setTimeout(() => setActionMsg(null), 6000)
   }

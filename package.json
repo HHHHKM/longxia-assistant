@@ -1,6 +1,6 @@
 {
   "name": "longxia-assistant",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "🦞 龙虾助手 - 任何人都会用的 AI 助手",
   "main": "electron/main.cjs",
   "type": "module",

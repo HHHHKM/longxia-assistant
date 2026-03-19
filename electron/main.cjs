@@ -338,11 +338,37 @@ ipcMain.handle('get-config', async () => {
 })
 
 ipcMain.handle('restart-service', async () => {
-  await stopGateway()
-  await new Promise(r => setTimeout(r, 1000))
-  await startGateway({ onLog: console.log })
-  await waitForService(30)
-  return { ok: true }
+  try {
+    await stopGateway()
+    await new Promise(r => setTimeout(r, 1000))
+
+    // 重启前尽量保证 workspace 已就绪，避免启动后接口缺失
+    try {
+      await initWorkspace({ onLog: console.log })
+    } catch (e) {
+      console.warn('[restart-service] initWorkspace 失败，继续:', e.message)
+    }
+
+    const startResult = await startGateway({ onLog: console.log })
+    if (!startResult.ok) {
+      return {
+        ok: false,
+        error: 'AI 服务启动失败，请稍后重试或查看日志',
+      }
+    }
+
+    const ready = await waitForService(30)
+    if (!ready) {
+      return {
+        ok: false,
+        error: 'AI 服务重启后未就绪，请稍后再试',
+      }
+    }
+
+    return { ok: true }
+  } catch (e) {
+    return { ok: false, error: e.message || 'AI 服务重启失败' }
+  }
 })
 
 ipcMain.handle('open-external', async (event, url) => {

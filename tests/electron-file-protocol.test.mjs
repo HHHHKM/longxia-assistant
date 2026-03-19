@@ -45,3 +45,14 @@ test('Main panel loads local renderer route instead of OpenClaw control UI URL',
   assert.match(mainProcess, /const url = getRendererUrl\('\/'\)/)
   assert.doesNotMatch(mainProcess, /const url = `\$\{SERVICE_URL\}`/)
 })
+
+test('restart-service IPC validates startup result and returns explicit errors', async () => {
+  const mainProcess = await readProjectFile('electron/main.cjs')
+
+  assert.match(mainProcess, /ipcMain\.handle\('restart-service'/)
+  assert.match(mainProcess, /const startResult = await startGateway/)
+  assert.match(mainProcess, /if \(!startResult\.ok\)/)
+  assert.match(mainProcess, /const ready = await waitForService\(30\)/)
+  assert.match(mainProcess, /if \(!ready\)/)
+  assert.match(mainProcess, /return \{ ok: false, error:/)
+})
