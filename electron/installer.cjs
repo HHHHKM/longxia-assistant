@@ -9,6 +9,10 @@ const path = require('path')
 
 // Node 22 LTS
 const NODE_VERSION = 'v22.14.0'
+const GIT_RELEASES_API = 'https://api.github.com/repos/git-for-windows/git/releases/latest'
+const MINGIT_FALLBACK_URL = 'https://github.com/git-for-windows/git/releases/download/v2.45.2.windows.1/MinGit-2.45.2-64-bit.zip'
+const MINGIT_MIRROR_ENV = 'LONGXIA_MINGIT_MIRRORS'
+const MINGIT_SINGLE_URL_ENV = 'LONGXIA_MINGIT_URL'
 const isMac = process.platform === 'darwin'
 const isWindows = process.platform === 'win32'
 const isLinux = process.platform === 'linux'
@@ -24,6 +28,271 @@ function runCommand(cmd, opts = {}) {
       resolve({ ok: !err, stdout: (stdout || '').trim(), stderr: (stderr || '').trim(), err })
     })
   })
+}
+
+function fetchJson(url, headers = {}) {
+  return new Promise((resolve, reject) => {
+    const protocol = url.startsWith('https') ? https : http
+    const request = protocol.get(url, { headers }, (response) => {
+      // 处理重定向
+      if (response.statusCode === 301 || response.statusCode === 302) {
+        return fetchJson(response.headers.location, headers).then(resolve).catch(reject)
+      }
+      if (response.statusCode !== 200) {
+        return reject(new Error(`请求失败（${response.statusCode}）`))
+      }
+      const chunks = []
+      response.on('data', (chunk) => chunks.push(chunk))
+      response.on('end', () => {
+        try {
+          const text = Buffer.concat(chunks).toString('utf8')
+          resolve(JSON.parse(text))
+        } catch (e) {
+          reject(e)
+        }
+      })
+      response.on('error', reject)
+    })
+    request.on('error', reject)
+    request.setTimeout(15000, () => {
+      request.destroy()
+      reject(new Error('请求超时'))
+    })
+  })
+}
+
+function findGitExe(rootDir) {
+  const directPath = path.join(rootDir, 'cmd', 'git.exe')
+  if (fs.existsSync(directPath)) return directPath
+
+  if (!fs.existsSync(rootDir)) return null
+
+  const stack = [rootDir]
+  while (stack.length > 0) {
+    const current = stack.pop()
+    let entries = []
+    try {
+      entries = fs.readdirSync(current, { withFileTypes: true })
+    } catch {
+      continue
+    }
+    for (const entry of entries) {
+      const fullPath = path.join(current, entry.name)
+      if (entry.isDirectory()) {
+        stack.push(fullPath)
+        continue
+      }
+      if (entry.isFile() && entry.name.toLowerCase() === 'git.exe') {
+        return fullPath
+      }
+    }
+  }
+  return null
+}
+
+function normalizeUrlList(raw) {
+  if (!raw) return []
+  return String(raw)
+    .split(/[,\n;\r]/)
+    .map((item) => item.trim())
+    .filter((item) => {
+      if (!item) return false
+      try {
+        const parsed = new URL(item)
+        return parsed.protocol === 'https:' || parsed.protocol === 'http:'
+      } catch {
+        return false
+      }
+    })
+}
+
+function deriveFilenameFromUrl(url, fallback = 'MinGit-64-bit.zip') {
+  try {
+    const parsed = new URL(url)
+    const name = path.basename(parsed.pathname || '')
+    if (name && /\.zip$/i.test(name)) return name
+  } catch {}
+  return fallback
+}
+
+function readInstallerMirrorConfig() {
+  const localAppData = process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local')
+  const programData = process.env.ProgramData || 'C:\\ProgramData'
+  const configPaths = [
+    path.join(localAppData, 'longxia-assistant', 'installer.json'),
+    path.join(programData, 'longxia-assistant', 'installer.json'),
+  ]
+
+  const urls = []
+  for (const configPath of configPaths) {
+    if (!fs.existsSync(configPath)) continue
+    try {
+      const raw = fs.readFileSync(configPath, 'utf8')
+      const json = JSON.parse(raw)
+      if (json && typeof json.minGitUrl === 'string') {
+        urls.push(...normalizeUrlList(json.minGitUrl))
+      }
+      if (json && Array.isArray(json.minGitMirrors)) {
+        urls.push(...json.minGitMirrors.flatMap((item) => normalizeUrlList(item)))
+      }
+    } catch {
+      // 配置文件无效时忽略，继续其他来源
+    }
+  }
+  return urls
+}
+
+function getCustomMinGitSources() {
+  const urls = [
+    ...normalizeUrlList(process.env[MINGIT_MIRROR_ENV] || ''),
+    ...normalizeUrlList(process.env[MINGIT_SINGLE_URL_ENV] || ''),
+    ...readInstallerMirrorConfig(),
+  ]
+
+  const dedup = new Set()
+  const sources = []
+  for (const url of urls) {
+    if (dedup.has(url)) continue
+    dedup.add(url)
+    sources.push({
+      url,
+      filename: deriveFilenameFromUrl(url, `MinGit-custom-${Date.now()}-64-bit.zip`),
+      source: 'mirror',
+    })
+  }
+  return sources
+}
+
+async function resolveMinGitSources() {
+  const sources = [...getCustomMinGitSources()]
+
+  try {
+    const release = await fetchJson(
+      GIT_RELEASES_API,
+      { 'User-Agent': 'longxia-assistant-installer' }
+    )
+    const assets = Array.isArray(release.assets) ? release.assets : []
+    const minGitAsset = assets.find((asset) => {
+      const name = asset && asset.name ? String(asset.name) : ''
+      return /^MinGit-.*-64-bit\.zip$/i.test(name)
+    })
+    if (minGitAsset && minGitAsset.browser_download_url) {
+      sources.push({
+        url: minGitAsset.browser_download_url,
+        filename: minGitAsset.name || 'MinGit-latest-64-bit.zip',
+        source: 'github-latest',
+      })
+    }
+  } catch {
+    // 静默继续，后续会走 fallback
+  }
+
+  sources.push({
+    url: MINGIT_FALLBACK_URL,
+    filename: path.basename(MINGIT_FALLBACK_URL),
+    source: 'github-fallback',
+  })
+
+  // 去重，保持优先级：镜像 > latest > fallback
+  const dedup = new Set()
+  return sources.filter((item) => {
+    if (dedup.has(item.url)) return false
+    dedup.add(item.url)
+    return true
+  })
+}
+
+async function ensureGitForNpm(onProgress) {
+  const hasGit = await runCommand('git --version', { timeout: 10000 })
+  if (hasGit.ok) {
+    return { ...process.env }
+  }
+
+  if (!isWindows) {
+    throw new Error('系统缺少 git 命令，请先安装 Git 后再试。')
+  }
+
+  if (onProgress) onProgress('检测到系统缺少 Git，正在准备运行时依赖...')
+
+  const toolsRoot = path.join(os.homedir(), 'AppData', 'Local', 'longxia-assistant', 'tools')
+  const minGitRoot = path.join(toolsRoot, 'mingit')
+
+  let gitExe = findGitExe(minGitRoot)
+  if (!gitExe) {
+    const minGitSources = await resolveMinGitSources()
+    let lastError = null
+
+    for (const source of minGitSources) {
+      const zipPath = path.join(
+        os.tmpdir(),
+        source.filename || `MinGit-${Date.now()}-64-bit.zip`
+      )
+      try {
+        if (onProgress) onProgress(`正在下载 Git 运行时（${source.source}）...`)
+        await downloadFile(source.url, zipPath, (pct) => {
+          if (onProgress) onProgress(`下载 Git 运行时 ${pct}%...`)
+        })
+
+        if (onProgress) onProgress('正在解压 Git 运行时...')
+        fs.rmSync(minGitRoot, { recursive: true, force: true })
+        fs.mkdirSync(minGitRoot, { recursive: true })
+
+        const escapedZip = zipPath.replace(/'/g, "''")
+        const escapedDest = minGitRoot.replace(/'/g, "''")
+        const extractCmd = `powershell -NoProfile -ExecutionPolicy Bypass -Command "Expand-Archive -Path '${escapedZip}' -DestinationPath '${escapedDest}' -Force"`
+        const extractResult = await runCommand(extractCmd, { timeout: 180000 })
+
+        if (!extractResult.ok) {
+          throw new Error(`Git 运行时解压失败：${extractResult.stderr || extractResult.stdout}`)
+        }
+
+        gitExe = findGitExe(minGitRoot)
+        if (gitExe) break
+        throw new Error('Git 运行时解压完成，但未找到 git.exe')
+      } catch (e) {
+        lastError = e
+      } finally {
+        fs.unlink(zipPath, () => {})
+      }
+    }
+
+    if (!gitExe) {
+      throw new Error(
+        `Git 运行时准备失败：${lastError && lastError.message ? lastError.message : '未知错误'}`
+      )
+    }
+  }
+
+  if (!gitExe) {
+    throw new Error(
+      `Git 运行时准备失败，请手动安装 Git 后重试。` +
+      `（可配置镜像：环境变量 ${MINGIT_MIRROR_ENV} 或 ${MINGIT_SINGLE_URL_ENV}）`
+    )
+  }
+
+  const gitRoot = path.dirname(path.dirname(gitExe))
+  const pathEntries = [
+    path.dirname(gitExe),
+    path.join(gitRoot, 'mingw64', 'bin'),
+    path.join(gitRoot, 'usr', 'bin'),
+    path.join(gitRoot, 'bin'),
+  ].filter((p) => fs.existsSync(p))
+
+  const env = {
+    ...process.env,
+    PATH: `${pathEntries.join(path.delimiter)}${path.delimiter}${process.env.PATH || ''}`,
+    GIT_TERMINAL_PROMPT: '0',
+  }
+
+  const verifyGit = await runCommand('git --version', { timeout: 10000, env })
+  if (!verifyGit.ok) {
+    const verifyGitExe = await runCommand(`"${gitExe}" --version`, { timeout: 10000, env })
+    if (!verifyGitExe.ok) {
+      throw new Error(`Git 运行时不可用：${verifyGit.stderr || verifyGitExe.stderr}`)
+    }
+  }
+
+  return env
 }
 
 /**
@@ -300,11 +569,12 @@ async function checkAndInstallOpenClaw(onProgress) {
 
   const npmCmd = isWindows ? 'npm.cmd' : 'npm'
   const mirror = '--registry=https://registry.npmmirror.com'
+  const npmEnv = await ensureGitForNpm(onProgress)
 
   // 先尝试 openclaw（标准包名）
   const result = await runCommand(
     `${npmCmd} install -g openclaw ${mirror}`,
-    { timeout: 180000 }
+    { timeout: 180000, env: npmEnv }
   )
 
   if (!result.ok) {
@@ -312,9 +582,16 @@ async function checkAndInstallOpenClaw(onProgress) {
     if (onProgress) onProgress('正在从官方源安装 openclaw...')
     const result2 = await runCommand(
       `${npmCmd} install -g openclaw`,
-      { timeout: 180000 }
+      { timeout: 180000, env: npmEnv }
     )
     if (!result2.ok) {
+      const details = `${result2.stderr || ''}\n${result2.stdout || ''}`
+      if (/spawn git|syscall spawn git|enoent.*git|path git/i.test(details)) {
+        throw new Error(
+          'OpenClaw 安装失败：系统缺少可用的 Git 运行时。\n' +
+          '请先安装 Git 后重试，或检查网络后重启安装程序。'
+        )
+      }
       throw new Error(
         `OpenClaw 安装失败：${result2.stderr || result2.stdout}\n` +
         '请手动执行：npm install -g openclaw'
