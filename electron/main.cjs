@@ -36,10 +36,21 @@ let mainWindow = null
 let splashWindow = null
 let tray = null
 let serviceRunning = false
+let webUiServer = null
+let webUiServerStarting = null
+let lastBrowserOpenAt = 0
 
 // OpenClaw gateway 端口 18789
 const SERVICE_PORT = GATEWAY_PORT        // 18789
 const SERVICE_URL = getGatewayUrl()      // http://localhost:18789
+const WEB_UI_HOST = '127.0.0.1'
+const WEB_UI_PORT = 18890
+const WEB_UI_MAX_PORT = 18910
+let webUiPort = WEB_UI_PORT
+
+function getWebUiBaseUrl() {
+  return `http://${WEB_UI_HOST}:${webUiPort}`
+}
 
 // ─── 启动画面 ────────────────────────────────────────
 
@@ -133,6 +144,254 @@ function createMainWindow(url) {
   return mainWindow
 }
 
+function getWebUiUrl(hashPath = '/') {
+  return `${getWebUiBaseUrl()}/#${hashPath}`
+}
+
+function mimeTypeByExt(filePath) {
+  const ext = path.extname(filePath).toLowerCase()
+  const map = {
+    '.html': 'text/html; charset=utf-8',
+    '.js': 'application/javascript; charset=utf-8',
+    '.css': 'text/css; charset=utf-8',
+    '.json': 'application/json; charset=utf-8',
+    '.svg': 'image/svg+xml',
+    '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.gif': 'image/gif',
+    '.ico': 'image/x-icon',
+    '.woff': 'font/woff',
+    '.woff2': 'font/woff2',
+    '.ttf': 'font/ttf',
+    '.map': 'application/json; charset=utf-8',
+  }
+  return map[ext] || 'application/octet-stream'
+}
+
+function jsonReply(res, code, body) {
+  res.writeHead(code, { 'Content-Type': 'application/json; charset=utf-8' })
+  res.end(JSON.stringify(body))
+}
+
+function readBody(req) {
+  return new Promise((resolve, reject) => {
+    const chunks = []
+    req.on('data', (chunk) => chunks.push(chunk))
+    req.on('end', () => resolve(Buffer.concat(chunks)))
+    req.on('error', reject)
+  })
+}
+
+function getGatewayTokenFromConfig() {
+  try {
+    const cfg = readConfig()
+    return cfg?.gateway?.auth?.token || ''
+  } catch {
+    return ''
+  }
+}
+
+function restartGatewayService() {
+  return (async () => {
+    try {
+      await stopGateway()
+      await new Promise((r) => setTimeout(r, 1000))
+
+      // 重启前尽量保证 workspace 已就绪，避免启动后接口缺失
+      try {
+        await initWorkspace({ onLog: console.log })
+      } catch (e) {
+        console.warn('[restart-service] initWorkspace 失败，继续:', e.message)
+      }
+
+      const startResult = await startGateway({ onLog: console.log })
+      if (!startResult.ok) {
+        return {
+          ok: false,
+          error: 'AI 服务启动失败，请稍后重试或查看日志',
+        }
+      }
+
+      const ready = await waitForService(30)
+      if (!ready) {
+        return {
+          ok: false,
+          error: 'AI 服务重启后未就绪，请稍后再试',
+        }
+      }
+
+      return { ok: true }
+    } catch (e) {
+      return { ok: false, error: e.message || 'AI 服务重启失败' }
+    }
+  })()
+}
+
+function proxyToGateway(req, res, pathname, search, bodyBuffer) {
+  return new Promise((resolve) => {
+    const url = new URL(`${SERVICE_URL}${pathname}${search || ''}`)
+    const token = getGatewayTokenFromConfig()
+    const headers = { ...req.headers }
+    delete headers.host
+    delete headers.origin
+    delete headers.referer
+    delete headers['sec-fetch-site']
+    delete headers['sec-fetch-mode']
+    delete headers['sec-fetch-dest']
+
+    if (!headers.authorization && token) {
+      headers.authorization = `Bearer ${token}`
+    }
+    if (bodyBuffer && bodyBuffer.length > 0 && !headers['content-length']) {
+      headers['content-length'] = String(bodyBuffer.length)
+    }
+
+    const upstreamReq = http.request(
+      {
+        host: url.hostname,
+        port: Number(url.port) || SERVICE_PORT,
+        path: `${url.pathname}${url.search}`,
+        method: req.method || 'GET',
+        headers,
+      },
+      (upstreamRes) => {
+        const responseHeaders = { ...(upstreamRes.headers || {}) }
+        delete responseHeaders.connection
+        res.writeHead(upstreamRes.statusCode || 502, responseHeaders)
+        upstreamRes.pipe(res)
+        upstreamRes.on('end', resolve)
+      }
+    )
+
+    upstreamReq.on('error', (err) => {
+      jsonReply(res, 502, { ok: false, error: `Gateway 代理失败: ${err.message}` })
+      resolve()
+    })
+
+    if (bodyBuffer && bodyBuffer.length > 0) {
+      upstreamReq.write(bodyBuffer)
+    }
+    upstreamReq.end()
+  })
+}
+
+async function handleWebUiRequest(req, res) {
+  const method = (req.method || 'GET').toUpperCase()
+  const requestUrl = new URL(req.url || '/', getWebUiBaseUrl())
+  const pathname = requestUrl.pathname
+
+  if (pathname === '/api/restart' && method === 'POST') {
+    const result = await restartGatewayService()
+    jsonReply(res, result.ok ? 200 : 500, result)
+    return
+  }
+
+  if (pathname.startsWith('/api/') || pathname.startsWith('/v1/')) {
+    const bodyBuffer = method === 'GET' || method === 'HEAD' ? Buffer.alloc(0) : await readBody(req)
+    await proxyToGateway(req, res, pathname, requestUrl.search, bodyBuffer)
+    return
+  }
+
+  const distRoot = path.join(__dirname, '..', 'dist')
+  const safePath = decodeURIComponent(pathname === '/' ? '/index.html' : pathname)
+  const candidate = path.normalize(path.join(distRoot, safePath))
+  if (!candidate.startsWith(path.normalize(distRoot))) {
+    res.writeHead(403)
+    res.end('Forbidden')
+    return
+  }
+
+  let filePath = candidate
+  if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
+    filePath = path.join(distRoot, 'index.html')
+  }
+
+  if (!fs.existsSync(filePath)) {
+    res.writeHead(404)
+    res.end('Not Found')
+    return
+  }
+
+  res.writeHead(200, {
+    'Content-Type': mimeTypeByExt(filePath),
+    'Cache-Control': filePath.endsWith('.html') ? 'no-cache' : 'public, max-age=31536000, immutable',
+  })
+  fs.createReadStream(filePath).pipe(res)
+}
+
+function listenWebUiServerWithFallback(server, startPort) {
+  return new Promise((resolve, reject) => {
+    const tryListen = (port) => {
+      const onError = (err) => {
+        server.off('listening', onListening)
+        if (err && err.code === 'EADDRINUSE' && port < WEB_UI_MAX_PORT) {
+          tryListen(port + 1)
+          return
+        }
+        reject(err)
+      }
+
+      const onListening = () => {
+        server.off('error', onError)
+        resolve(port)
+      }
+
+      server.once('error', onError)
+      server.once('listening', onListening)
+      server.listen(port, WEB_UI_HOST)
+    }
+
+    tryListen(startPort)
+  })
+}
+
+function ensureWebUiServer() {
+  if (webUiServer) return Promise.resolve()
+  if (webUiServerStarting) return webUiServerStarting
+
+  webUiServerStarting = (async () => {
+    const server = http.createServer((req, res) => {
+      handleWebUiRequest(req, res).catch((err) => {
+        jsonReply(res, 500, { ok: false, error: err.message || 'Web UI 服务异常' })
+      })
+    })
+
+    server.on('error', (err) => {
+      console.error('[web-ui] server error:', err)
+    })
+
+    const selectedPort = await listenWebUiServerWithFallback(server, webUiPort)
+    webUiPort = selectedPort
+    webUiServer = server
+  })()
+    .catch((err) => {
+      if (webUiServer) {
+        try { webUiServer.close() } catch {}
+      }
+      webUiServer = null
+      throw err
+    })
+    .finally(() => {
+      webUiServerStarting = null
+    })
+
+  return webUiServerStarting
+}
+
+function openMainPanelInBrowser(hashPath = '/') {
+  const now = Date.now()
+  if (now - lastBrowserOpenAt < 1200) return
+  lastBrowserOpenAt = now
+
+  ensureWebUiServer()
+    .then(() => shell.openExternal(getWebUiUrl(hashPath)))
+    .catch((err) => {
+      console.error('[web-ui] 本地网页服务启动失败:', err)
+      showError(`网页模式启动失败：${err.message || err}`)
+    })
+}
+
 function getRendererUrl(hashPath = '/') {
   if (process.env.NODE_ENV === 'development' || process.env.VITE_DEV_SERVER_URL) {
     const base = process.env.VITE_DEV_SERVER_URL || 'http://localhost:5173'
@@ -142,14 +401,10 @@ function getRendererUrl(hashPath = '/') {
 }
 
 function showMainPanel() {
-  // 主面板始终使用龙虾助手本地页面，不直接暴露 OpenClaw 控制台界面
-  const url = getRendererUrl('/')
+  // 配置完成后统一在系统浏览器打开龙虾助手网页端
+  openMainPanelInBrowser('/')
   if (mainWindow && !mainWindow.isDestroyed()) {
-    mainWindow.loadURL(url)
-    mainWindow.show()
-    mainWindow.focus()
-  } else {
-    createMainWindow(url)
+    mainWindow.hide()
   }
 }
 
@@ -219,11 +474,13 @@ function setupTray() {
     {
       label: '🦞 打开龙虾助手',
       click: () => {
-        if (mainWindow) {
+        if (hasConfig()) {
+          showMainPanel()
+        } else if (mainWindow && !mainWindow.isDestroyed()) {
           mainWindow.show()
           mainWindow.focus()
         } else {
-          showMainPanel()
+          showSetupWizard()
         }
       },
     },
@@ -231,9 +488,10 @@ function setupTray() {
     {
       label: '🔄 重启服务',
       click: async () => {
-        await stopGateway()
-        await new Promise(r => setTimeout(r, 1000))
-        await startGateway({ onLog: console.log })
+        const result = await restartGatewayService()
+        if (!result.ok) {
+          dialog.showErrorBox('龙虾助手重启失败', result.error || '未知错误')
+        }
       },
     },
     {
@@ -257,11 +515,13 @@ function setupTray() {
   tray.setToolTip('龙虾助手 🦞')
 
   tray.on('double-click', () => {
-    if (mainWindow) {
+    if (hasConfig()) {
+      showMainPanel()
+    } else if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.show()
       mainWindow.focus()
     } else {
-      showMainPanel()
+      showSetupWizard()
     }
   })
 }
@@ -338,37 +598,7 @@ ipcMain.handle('get-config', async () => {
 })
 
 ipcMain.handle('restart-service', async () => {
-  try {
-    await stopGateway()
-    await new Promise(r => setTimeout(r, 1000))
-
-    // 重启前尽量保证 workspace 已就绪，避免启动后接口缺失
-    try {
-      await initWorkspace({ onLog: console.log })
-    } catch (e) {
-      console.warn('[restart-service] initWorkspace 失败，继续:', e.message)
-    }
-
-    const startResult = await startGateway({ onLog: console.log })
-    if (!startResult.ok) {
-      return {
-        ok: false,
-        error: 'AI 服务启动失败，请稍后重试或查看日志',
-      }
-    }
-
-    const ready = await waitForService(30)
-    if (!ready) {
-      return {
-        ok: false,
-        error: 'AI 服务重启后未就绪，请稍后再试',
-      }
-    }
-
-    return { ok: true }
-  } catch (e) {
-    return { ok: false, error: e.message || 'AI 服务重启失败' }
-  }
+  return restartGatewayService()
 })
 
 ipcMain.handle('open-external', async (event, url) => {
@@ -458,15 +688,22 @@ app.on('window-all-closed', () => {
 })
 
 app.on('activate', () => {
-  if (mainWindow) {
+  if (hasConfig()) {
+    showMainPanel()
+  } else if (mainWindow) {
     mainWindow.show()
   } else {
-    showMainPanel()
+    showSetupWizard()
   }
 })
 
 app.on('before-quit', () => {
   app.isQuiting = true
+  if (webUiServer) {
+    try { webUiServer.close() } catch {}
+    webUiServer = null
+    webUiServerStarting = null
+  }
   stopGateway()
 })
 
@@ -484,10 +721,14 @@ async function main() {
   }
 
   app.on('second-instance', () => {
-    if (mainWindow) {
+    if (hasConfig()) {
+      showMainPanel()
+    } else if (mainWindow) {
       if (mainWindow.isMinimized()) mainWindow.restore()
       mainWindow.show()
       mainWindow.focus()
+    } else {
+      showSetupWizard()
     }
   })
 

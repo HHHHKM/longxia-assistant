@@ -54,7 +54,7 @@ function Home() {
           throw new Error(result?.error || '重启失败')
         }
       } else {
-        const res = await fetch('http://localhost:3001/api/restart', { method: 'POST' })
+        const res = await fetch('/api/restart', { method: 'POST' })
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
       }
       setActionMsg({ type: 'success', text: '✅ 重启中，约 5 秒后生效…' })

@@ -14,8 +14,11 @@ async function getGatewayInfo() {
     _gatewayUrl = await window.electronAPI.gatewayUrl()
     _gatewayToken = await window.electronAPI.gatewayToken()
   } else {
-    // 开发模式 fallback
-    _gatewayUrl = 'http://localhost:18789'
+    // 浏览器模式优先同源（由 Electron 本地 Web 服务代理 /api）
+    const origin = window.location?.origin || ''
+    const isHttpOrigin = /^https?:\/\//.test(origin)
+    const isViteDev = /:(5173|4173)$/.test(origin)
+    _gatewayUrl = isHttpOrigin && !isViteDev ? origin : 'http://localhost:18789'
     _gatewayToken = ''
   }
 
